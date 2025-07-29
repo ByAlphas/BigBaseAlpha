@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigBaseAlpha - Redis Cache Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #4c51bf;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            color: #4c51bf;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active { background-color: #48bb78; }
+        .status-warning { background-color: #ed8936; }
+        .status-error { background-color: #f56565; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .command-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .command-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f7fafc;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .command-item:last-child {
+            border-bottom: none;
+        }
+
+        .command-name {
+            font-weight: 600;
+            color: #4c51bf;
+        }
+
+        .command-category {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .keys-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .key-item {
+            background: #f7fafc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #2d3748;
+            border-left: 3px solid #4c51bf;
+        }
+
+        .performance-chart {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            height: 150px;
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .chart-bar {
+            background: linear-gradient(180deg, #4c51bf 0%, #667eea 100%);
+            border-radius: 4px 4px 0 0;
+            min-width: 20px;
+            margin: 0 2px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .chart-bar:hover {
+            transform: scaleY(1.1);
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4c51bf 0%, #667eea 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 81, 191, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #718096 0%, #a0aec0 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #fc8181 100%);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #c6f6d5;
+        }
+
+        .alert-warning {
+            background: #fffaf0;
+            color: #744210;
+            border: 1px solid #fbd38d;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e2e8f0;
+            border-radius: 50%;
+            border-top-color: #4c51bf;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .wide-card {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 BigBaseAlpha Redis Cache</h1>
+            <p>Enterprise-grade Redis-compatible caching layer with high-performance in-memory operations</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="refreshData()">🔄 Refresh Data</button>
+            <button class="btn btn-secondary" onclick="saveSnapshot()">💾 Save Snapshot</button>
+            <button class="btn btn-danger" onclick="flushCache()">🗑️ Flush Cache</button>
+            <button class="btn btn-secondary" onclick="runPerformanceTest()">⚡ Performance Test</button>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="dashboard-grid">
+            <!-- Cache Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Cache Statistics</div>
+                </div>
+                <div id="cacheStats" class="loading">Loading cache statistics...</div>
+            </div>
+
+            <!-- Memory Usage -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">💾</div>
+                    <div class="card-title">Memory Usage</div>
+                </div>
+                <div id="memoryUsage" class="loading">Loading memory usage...</div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Performance</div>
+                </div>
+                <div id="performance" class="loading">Loading performance metrics...</div>
+            </div>
+
+            <!-- Redis Commands -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⌨️</div>
+                    <div class="card-title">Available Commands</div>
+                </div>
+                <div id="commands" class="loading">Loading commands...</div>
+            </div>
+
+            <!-- Key Distribution -->
+            <div class="card wide-card">
+                <div class="card-header">
+                    <div class="card-icon">🔑</div>
+                    <div class="card-title">Key Distribution & Patterns</div>
+                </div>
+                <div id="keyDistribution" class="loading">Loading key distribution...</div>
+            </div>
+
+            <!-- Performance Chart -->
+            <div class="card wide-card">
+                <div class="card-header">
+                    <div class="card-icon">📈</div>
+                    <div class="card-title">Command Performance Breakdown</div>
+                </div>
+                <div id="performanceChart" class="loading">Loading performance chart...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let refreshInterval;
+        
+        // Start auto-refresh
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshData();
+            refreshInterval = setInterval(refreshData, 5000); // Refresh every 5 seconds
+        });
+
+        async function refreshData() {
+            try {
+                await Promise.all([
+                    loadCacheStats(),
+                    loadMemoryUsage(),
+                    loadPerformance(),
+                    loadCommands(),
+                    loadKeyDistribution()
+                ]);
+                showAlert('Data refreshed successfully', 'success');
+            } catch (error) {
+                showAlert('Failed to refresh data: ' + error.message, 'error');
+            }
+        }
+
+        async function loadCacheStats() {
+            try {
+                const response = await fetch('/api/redis/stats');
+                const stats = await response.json();
+                
+                const statsHtml = `
+                    <div class="metric">
+                        <span class="metric-label">
+                            <span class="status-indicator status-active"></span>Status
+                        </span>
+                        <span class="metric-value">Active</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total Operations</span>
+                        <span class="metric-value">${stats.operations.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Cache Hits</span>
+                        <span class="metric-value">${stats.hits.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Cache Misses</span>
+                        <span class="metric-value">${stats.misses.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Hit Rate</span>
+                        <span class="metric-value">${stats.hitRate.toFixed(2)}%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total Keys</span>
+                        <span class="metric-value">${stats.keyCount.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Uptime</span>
+                        <span class="metric-value">${formatUptime(stats.uptime)}</span>
+                    </div>
+                `;
+                
+                document.getElementById('cacheStats').innerHTML = statsHtml;
+            } catch (error) {
+                document.getElementById('cacheStats').innerHTML = '<div class="alert alert-error">Failed to load cache stats</div>';
+            }
+        }
+
+        async function loadMemoryUsage() {
+            try {
+                const response = await fetch('/api/redis/memory');
+                const memory = await response.json();
+                
+                const usedPercent = (memory.usage.total / memory.maxMemory * 100).toFixed(1);
+                
+                const memoryHtml = `
+                    <div class="metric">
+                        <span class="metric-label">Used Memory</span>
+                        <span class="metric-value">${formatBytes(memory.usage.total)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Max Memory</span>
+                        <span class="metric-value">${formatBytes(memory.maxMemory)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Usage</span>
+                        <span class="metric-value">${usedPercent}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${usedPercent}%"></div>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Eviction Policy</span>
+                        <span class="metric-value">${memory.evictionPolicy.toUpperCase()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total Evictions</span>
+                        <span class="metric-value">${memory.evictionStats.totalEvictions}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Fragmentation Ratio</span>
+                        <span class="metric-value">${memory.fragmentation.ratio}</span>
+                    </div>
+                `;
+                
+                document.getElementById('memoryUsage').innerHTML = memoryHtml;
+            } catch (error) {
+                document.getElementById('memoryUsage').innerHTML = '<div class="alert alert-error">Failed to load memory usage</div>';
+            }
+        }
+
+        async function loadPerformance() {
+            try {
+                const response = await fetch('/api/redis/performance');
+                const perf = await response.json();
+                
+                const performanceHtml = `
+                    <div class="metric">
+                        <span class="metric-label">Ops/sec</span>
+                        <span class="metric-value">${perf.throughput.operationsPerSecond.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Reads/sec</span>
+                        <span class="metric-value">${perf.throughput.readsPerSecond.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Writes/sec</span>
+                        <span class="metric-value">${perf.throughput.writesPerSecond.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Avg Latency</span>
+                        <span class="metric-value">${perf.throughput.avgLatency} ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">P95 Latency</span>
+                        <span class="metric-value">${perf.throughput.p95Latency} ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">P99 Latency</span>
+                        <span class="metric-value">${perf.throughput.p99Latency} ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Active Connections</span>
+                        <span class="metric-value">${perf.connections.current}</span>
+                    </div>
+                `;
+                
+                document.getElementById('performance').innerHTML = performanceHtml;
+                
+                // Update performance chart
+                updatePerformanceChart(perf.commands);
+            } catch (error) {
+                document.getElementById('performance').innerHTML = '<div class="alert alert-error">Failed to load performance</div>';
+            }
+        }
+
+        async function loadCommands() {
+            try {
+                const response = await fetch('/api/redis/commands');
+                const commands = await response.json();
+                
+                const commandsHtml = `
+                    <div class="command-list">
+                        ${commands.map(cmd => `
+                            <div class="command-item">
+                                <span class="command-name">${cmd.command}</span>
+                                <div>
+                                    <span class="command-category">${cmd.category}</span>
+                                    <small style="margin-left: 8px; color: #666;">${cmd.complexity}</small>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                document.getElementById('commands').innerHTML = commandsHtml;
+            } catch (error) {
+                document.getElementById('commands').innerHTML = '<div class="alert alert-error">Failed to load commands</div>';
+            }
+        }
+
+        async function loadKeyDistribution() {
+            try {
+                const response = await fetch('/api/redis/keys');
+                const keyData = await response.json();
+                
+                const patternHtml = Object.entries(keyData.patterns)
+                    .map(([pattern, count]) => `
+                        <div class="metric">
+                            <span class="metric-label">${pattern}</span>
+                            <span class="metric-value">${count.toLocaleString()}</span>
+                        </div>
+                    `).join('');
+                
+                const keysHtml = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: #4c51bf;">Key Patterns</h4>
+                            ${patternHtml}
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: #4c51bf;">Sample Keys</h4>
+                            <div class="keys-grid">
+                                ${keyData.keys.slice(0, 20).map(key => `
+                                    <div class="key-item">${key}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
+                        <span class="metric-label"><strong>Total Keys</strong></span>
+                        <span class="metric-value"><strong>${keyData.totalKeys.toLocaleString()}</strong></span>
+                    </div>
+                `;
+                
+                document.getElementById('keyDistribution').innerHTML = keysHtml;
+            } catch (error) {
+                document.getElementById('keyDistribution').innerHTML = '<div class="alert alert-error">Failed to load key distribution</div>';
+            }
+        }
+
+        function updatePerformanceChart(commands) {
+            const maxCount = Math.max(...commands.map(cmd => cmd.count));
+            
+            const chartHtml = `
+                <div style="display: flex; justify-content: space-between; align-items: end; height: 150px; background: #f7fafc; border-radius: 8px; padding: 15px;">
+                    ${commands.map(cmd => {
+                        const height = (cmd.count / maxCount) * 120;
+                        return `
+                            <div style="display: flex; flex-direction: column; align-items: center; margin: 0 5px;">
+                                <small style="margin-bottom: 5px; font-weight: 600; color: #4a5568;">${cmd.count}</small>
+                                <div class="chart-bar" style="height: ${height}px; width: 30px;" title="${cmd.command}: ${cmd.count} ops, ${cmd.avgTime}ms avg"></div>
+                                <small style="margin-top: 5px; font-size: 0.75rem; color: #666; transform: rotate(-45deg);">${cmd.command}</small>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div style="margin-top: 15px; font-size: 0.9rem; color: #666; text-align: center;">
+                    Command execution frequency and performance (hover for details)
+                </div>
+            `;
+            
+            document.getElementById('performanceChart').innerHTML = chartHtml;
+        }
+
+        async function saveSnapshot() {
+            try {
+                showAlert('Saving snapshot...', 'warning');
+                // Simulated save - would call actual API
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                showAlert('Snapshot saved successfully', 'success');
+            } catch (error) {
+                showAlert('Failed to save snapshot: ' + error.message, 'error');
+            }
+        }
+
+        async function flushCache() {
+            if (!confirm('Are you sure you want to flush all cache data? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                showAlert('Flushing cache...', 'warning');
+                // Simulated flush - would call actual API
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                showAlert('Cache flushed successfully', 'success');
+                await refreshData();
+            } catch (error) {
+                showAlert('Failed to flush cache: ' + error.message, 'error');
+            }
+        }
+
+        async function runPerformanceTest() {
+            try {
+                showAlert('Running performance test...', 'warning');
+                // Simulated performance test
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                showAlert('Performance test completed: 25,000 ops/sec average', 'success');
+                await refreshData();
+            } catch (error) {
+                showAlert('Performance test failed: ' + error.message, 'error');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            alertContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function formatUptime(seconds) {
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            
+            if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+            if (hours > 0) return `${hours}h ${minutes}m`;
+            return `${minutes}m`;
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

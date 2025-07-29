@@ -1,0 +1,120 @@
+{
+  "name": "bigbasealpha",
+  "version": "1.0.0",
+  "description": "Professional Grade Custom Database System - A sophisticated, dependency-free database with encryption, caching, indexing, and web dashboard",
+  "type": "module",
+  "main": "src/alpha.js",
+  "bin": {
+    "bigbase": "./src/cli/index.js"
+  },
+  "scripts": {
+    "start": "node src/alpha.js",
+    "cli": "node src/cli/index.js",
+    "dashboard": "node src/dashboard/server.js",
+    "test": "node test/bigbase.test.js",
+    "benchmark": "node simple-benchmark.js",
+    "benchmark:full": "node benchmark-comparison.js",
+    "performance": "node simple-benchmark.js",
+    "dev": "node --watch src/dashboard/server.js",
+    "build": "echo 'No build step required for pure JavaScript'",
+    "backup": "node src/cli/index.js backup",
+    "restore": "node src/cli/index.js restore",
+    "init": "node src/cli/index.js init",
+    "status": "node src/cli/index.js status",
+    "stats": "node src/cli/index.js stats"
+  },
+  "keywords": [
+    "database",
+    "nosql",
+    "json",
+    "custom-database",
+    "encryption",
+    "caching",
+    "indexing",
+    "dashboard",
+    "cli",
+    "javascript",
+    "node",
+    "file-based",
+    "embedded",
+    "lightweight",
+    "professional",
+    "enterprise",
+    "bigbase",
+    "alpha",
+    "redis-compatible",
+    "memory-cache",
+    "key-value-store"
+  ],
+  "author": {
+    "name": "BigBaseAlpha Team",
+    "url": "https://github.com/ByAlphas/bigbasealpha"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ByAlphas/bigbasealpha.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ByAlphas/bigbasealpha/issues"
+  },
+  "homepage": "https://github.com/ByAlphas/bigbasealpha#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "ws": "^8.18.3"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "files": [
+    "src/",
+    "examples/",
+    "test/",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "CONTRIBUTING.md"
+  ],
+  "config": {
+    "port": "3000",
+    "default_db_path": "./bigbase_data"
+  },
+  "bigbase": {
+    "version": "1.0.0",
+    "features": [
+      "multi-format-storage",
+      "encryption",
+      "caching",
+      "indexing",
+      "dashboard",
+      "cli",
+      "plugins",
+      "audit-logging",
+      "backup-restore",
+      "redis-cache-layer"
+    ],
+    "formats": [
+      "json",
+      "binary",
+      "hybrid"
+    ],
+    "security": [
+      "aes-encryption",
+      "bcrypt-hashing",
+      "audit-logs"
+    ],
+    "performance": [
+      "memory-caching",
+      "indexing",
+      "query-optimization"
+    ],
+    "tools": [
+      "web-dashboard",
+      "cli-interface",
+      "monitoring"
+    ]
+  }
+}

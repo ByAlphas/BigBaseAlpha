@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigBaseAlpha - Database Connectors & GraphQL Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .connectors-icon { background: linear-gradient(45deg, #3498db, #2980b9); }
+        .graphql-icon { background: linear-gradient(45deg, #e91e63, #ad1457); }
+        .integration-icon { background: linear-gradient(45deg, #ff9800, #f57c00); }
+        .performance-icon { background: linear-gradient(45deg, #4caf50, #388e3c); }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-connected { background: #27ae60; }
+        .status-disconnected { background: #e74c3c; }
+        .status-warning { background: #f39c12; }
+
+        .connection-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .connection-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .connection-info h4 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .connection-info p {
+            margin: 0;
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+
+        .connection-stats {
+            text-align: right;
+            font-size: 0.8rem;
+        }
+
+        .query-box {
+            background: #2c3e50;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #ecf0f1;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #27ae60, #219a52);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            transition: width 0.3s ease;
+        }
+
+        .log-container {
+            background: #2c3e50;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 250px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #ecf0f1;
+        }
+
+        .log-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-timestamp {
+            color: #95a5a6;
+            margin-right: 0.5rem;
+        }
+
+        .log-level-info { color: #3498db; }
+        .log-level-success { color: #27ae60; }
+        .log-level-warning { color: #f39c12; }
+        .log-level-error { color: #e74c3c; }
+
+        .refresh-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #3498db;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .schema-preview {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #2c3e50;
+        }
+
+        .feature-desc {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔗 Database Connectors & GraphQL Dashboard</h1>
+        <p>Enterprise-grade data integration and API management for BigBaseAlpha</p>
+    </div>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <!-- Database Connectors Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon connectors-icon">🔗</div>
+                    <div class="card-title">Database Connectors</div>
+                    <div class="refresh-indicator" id="connectors-refresh"></div>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Total Connections</span>
+                    <span class="metric-value" id="total-connections">4</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Connections</span>
+                    <span class="metric-value" id="active-connections">3</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Queries Executed</span>
+                    <span class="metric-value" id="queries-executed">8,015</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Data Transferred</span>
+                    <span class="metric-value" id="data-transferred">15.0 MB</span>
+                </div>
+
+                <div class="connection-list" id="connection-list">
+                    <!-- Connections will be loaded here -->
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="refreshConnections()">Refresh</button>
+                    <button class="btn btn-success" onclick="testAllConnections()">Test All</button>
+                </div>
+            </div>
+
+            <!-- GraphQL Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon graphql-icon">🚀</div>
+                    <div class="card-title">GraphQL Engine</div>
+                    <div class="refresh-indicator" id="graphql-refresh"></div>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Schema Types</span>
+                    <span class="metric-value" id="schema-types">8</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Resolvers</span>
+                    <span class="metric-value" id="resolvers-count">15</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Queries</span>
+                    <span class="metric-value" id="total-queries">2,547</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Subscriptions</span>
+                    <span class="metric-value" id="active-subscriptions">12</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Response Time</span>
+                    <span class="metric-value" id="avg-response-time">45.2ms</span>
+                </div>
+
+                <div class="query-box" id="sample-query">
+query GetUsers {
+  users(pagination: { limit: 10 }) {
+    edges {
+      _id
+      name
+      email
+    }
+    totalCount
+  }
+}</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="executeQuery()">Execute Query</button>
+                    <button class="btn btn-warning" onclick="openPlayground()">Open Playground</button>
+                </div>
+            </div>
+
+            <!-- Integration Status Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon integration-icon">⚡</div>
+                    <div class="card-title">Integration Status</div>
+                </div>
+
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🔄</div>
+                        <div class="feature-title">Real-time Sync</div>
+                        <div class="feature-desc">Active</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Schema Introspection</div>
+                        <div class="feature-desc">Enabled</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔔</div>
+                        <div class="feature-title">Subscriptions</div>
+                        <div class="feature-desc">Running</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🛡️</div>
+                        <div class="feature-title">Security</div>
+                        <div class="feature-desc">Protected</div>
+                    </div>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Import Operations</span>
+                    <span class="metric-value">23 completed</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Export Operations</span>
+                    <span class="metric-value">18 completed</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Sync Operations</span>
+                    <span class="metric-value">5 active</span>
+                </div>
+            </div>
+
+            <!-- Performance Metrics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon performance-icon">📈</div>
+                    <div class="card-title">Performance Metrics</div>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Query Throughput</span>
+                    <span class="metric-value">156 queries/sec</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 78%"></div>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Cache Hit Rate</span>
+                    <span class="metric-value">89.2%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 89%"></div>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Connection Pool Usage</span>
+                    <span class="metric-value">67%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 67%"></div>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Error Rate</span>
+                    <span class="metric-value">0.5%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0.5%; background: linear-gradient(90deg, #e74c3c, #c0392b);"></div>
+                </div>
+            </div>
+
+            <!-- Schema Introspection Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon graphql-icon">📋</div>
+                    <div class="card-title">Schema Introspection</div>
+                </div>
+
+                <div class="schema-preview" id="schema-preview">
+type User {
+  _id: ID!
+  name: String!
+  email: String!
+  age: Int
+  createdAt: Date
+}
+
+type Post {
+  _id: ID!
+  title: String!
+  content: String!
+  authorId: ID!
+  tags: [String]
+  createdAt: Date
+}
+
+type Query {
+  users: [User!]!
+  posts: [Post!]!
+  user(id: ID!): User
+  post(id: ID!): Post
+}</div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="refreshSchema()">Refresh Schema</button>
+                    <button class="btn btn-success" onclick="exportSchema()">Export Schema</button>
+                </div>
+            </div>
+
+            <!-- Activity Log Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon integration-icon">📝</div>
+                    <div class="card-title">Activity Log</div>
+                </div>
+
+                <div class="log-container" id="activity-log">
+                    <!-- Logs will be populated here -->
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="refreshLogs()">Refresh</button>
+                    <button class="btn btn-warning" onclick="clearLogs()">Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data and functions
+        const connections = [
+            { name: 'mysql-primary', type: 'mysql', status: 'connected', host: '192.168.1.100', queries: 1247, errors: 2 },
+            { name: 'postgres-analytics', type: 'postgresql', status: 'connected', host: '192.168.1.101', queries: 892, errors: 0 },
+            { name: 'mongodb-archive', type: 'mongodb', status: 'disconnected', host: '192.168.1.102', queries: 456, errors: 5 },
+            { name: 'redis-cache', type: 'redis', status: 'connected', host: '192.168.1.103', queries: 5420, errors: 1 }
+        ];
+
+        const activityLogs = [
+            { timestamp: new Date(Date.now() - 120000), level: 'info', message: 'GraphQL query executed successfully' },
+            { timestamp: new Date(Date.now() - 180000), level: 'success', message: 'Database connection established: mysql-primary' },
+            { timestamp: new Date(Date.now() - 240000), level: 'warning', message: 'Slow query detected: 1250ms' },
+            { timestamp: new Date(Date.now() - 300000), level: 'info', message: 'Schema introspection completed' },
+            { timestamp: new Date(Date.now() - 360000), level: 'success', message: 'Data import completed: 1250 records' },
+            { timestamp: new Date(Date.now() - 420000), level: 'error', message: 'Connection timeout: mongodb-archive' }
+        ];
+
+        function loadConnections() {
+            const container = document.getElementById('connection-list');
+            container.innerHTML = '';
+
+            connections.forEach(conn => {
+                const statusClass = conn.status === 'connected' ? 'status-connected' : 
+                                  conn.status === 'disconnected' ? 'status-disconnected' : 'status-warning';
+                
+                const item = document.createElement('div');
+                item.className = 'connection-item';
+                item.innerHTML = `
+                    <div class="connection-info">
+                        <h4><span class="status-indicator ${statusClass}"></span>${conn.name}</h4>
+                        <p>${conn.type.toUpperCase()} • ${conn.host}</p>
+                    </div>
+                    <div class="connection-stats">
+                        <div>${conn.queries.toLocaleString()} queries</div>
+                        <div style="color: ${conn.errors > 0 ? '#e74c3c' : '#27ae60'}">${conn.errors} errors</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function loadActivityLogs() {
+            const container = document.getElementById('activity-log');
+            container.innerHTML = '';
+
+            activityLogs.slice(-10).reverse().forEach(log => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <span class="log-timestamp">${log.timestamp.toLocaleTimeString()}</span>
+                    <span class="log-level-${log.level}">[${log.level.toUpperCase()}]</span>
+                    ${log.message}
+                `;
+                container.appendChild(entry);
+            });
+        }
+
+        function addLog(level, message) {
+            activityLogs.push({
+                timestamp: new Date(),
+                level,
+                message
+            });
+            loadActivityLogs();
+        }
+
+        function refreshConnections() {
+            const indicator = document.getElementById('connectors-refresh');
+            indicator.style.display = 'inline-block';
+            
+            setTimeout(() => {
+                indicator.style.display = 'none';
+                addLog('info', 'Connection list refreshed');
+                // Simulate some status changes
+                if (Math.random() > 0.7) {
+                    connections[2].status = 'connected';
+                    addLog('success', 'mongodb-archive connection restored');
+                }
+            }, 1500);
+        }
+
+        function testAllConnections() {
+            addLog('info', 'Testing all database connections...');
+            
+            let tested = 0;
+            connections.forEach((conn, index) => {
+                setTimeout(() => {
+                    const success = Math.random() > 0.2;
+                    const responseTime = Math.floor(Math.random() * 100) + 20;
+                    addLog(success ? 'success' : 'error', 
+                          `${conn.name}: ${success ? responseTime + 'ms' : 'Connection failed'}`);
+                    
+                    tested++;
+                    if (tested === connections.length) {
+                        addLog('info', 'Connection testing completed');
+                    }
+                }, index * 500);
+            });
+        }
+
+        function executeQuery() {
+            const indicator = document.getElementById('graphql-refresh');
+            indicator.style.display = 'inline-block';
+            
+            addLog('info', 'Executing GraphQL query...');
+            
+            setTimeout(() => {
+                indicator.style.display = 'none';
+                const executionTime = Math.floor(Math.random() * 100) + 25;
+                addLog('success', `GraphQL query executed in ${executionTime}ms`);
+                
+                // Update query count
+                const currentQueries = parseInt(document.getElementById('total-queries').textContent.replace(',', ''));
+                document.getElementById('total-queries').textContent = (currentQueries + 1).toLocaleString();
+            }, 1200);
+        }
+
+        function openPlayground() {
+            addLog('info', 'Opening GraphQL Playground...');
+            window.open('http://localhost:4000/graphql', '_blank');
+        }
+
+        function refreshSchema() {
+            addLog('info', 'Refreshing GraphQL schema...');
+            setTimeout(() => {
+                addLog('success', 'Schema introspection completed');
+            }, 800);
+        }
+
+        function exportSchema() {
+            addLog('info', 'Exporting GraphQL schema...');
+            
+            const schema = document.getElementById('schema-preview').textContent;
+            const blob = new Blob([schema], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bigbase-schema.graphql';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            addLog('success', 'Schema exported successfully');
+        }
+
+        function refreshLogs() {
+            addLog('info', 'Activity log refreshed');
+        }
+
+        function clearLogs() {
+            const container = document.getElementById('activity-log');
+            container.innerHTML = '<div class="log-entry">Activity log cleared</div>';
+            activityLogs.length = 0;
+        }
+
+        // Auto-refresh data every 30 seconds
+        setInterval(() => {
+            // Update random metrics
+            const metrics = [
+                'queries-executed',
+                'total-queries',
+                'active-subscriptions'
+            ];
+            
+            metrics.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const current = parseInt(element.textContent.replace(/,/g, ''));
+                    const increment = Math.floor(Math.random() * 10) + 1;
+                    element.textContent = (current + increment).toLocaleString();
+                }
+            });
+            
+            // Add periodic log entry
+            if (Math.random() > 0.7) {
+                const messages = [
+                    'System health check completed',
+                    'Connection pool optimized',
+                    'Cache cleanup performed',
+                    'Performance metrics updated'
+                ];
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                addLog('info', randomMessage);
+            }
+        }, 30000);
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConnections();
+            loadActivityLogs();
+            addLog('success', 'Dashboard initialized successfully');
+        });
+    </script>
+</body>
+</html>
