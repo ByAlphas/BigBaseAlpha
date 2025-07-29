@@ -267,6 +267,4 @@ Apache License 2.0 - see [LICENSE](LICENSE) file for details.
 
 **BigBaseAlpha** - *Enterprise Database System*
 
-Made with ❤️ for modern applications
-
 🚀 **Production Ready** • 🌟 **Enterprise Grade** • ⚡ **High Performance**
