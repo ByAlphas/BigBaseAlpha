@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigBaseAlpha - Business Intelligence Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-header p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            opacity: 0.8;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-name {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-trend {
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .trend-up { color: #4ade80; }
+        .trend-down { color: #f87171; }
+        .trend-stable { color: #fbbf24; }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-good { background-color: #4ade80; }
+        .status-warning { background-color: #fbbf24; }
+        .status-critical { background-color: #f87171; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background-color: #fef2f2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .success {
+            background-color: #f0fdf4;
+            color: #16a34a;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .insight-description {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .insight-timestamp {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>🧠 Business Intelligence Dashboard</h1>
+            <p>Advanced Analytics, KPIs, and Data Insights for BigBaseAlpha</p>
+            <div id="connectionStatus" class="status-indicator status-good"></div>
+            <span>System Status: <span id="statusText">Connected</span></span>
+        </div>
+
+        <div class="dashboard-stats" id="dashboardStats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalKPIs">-</div>
+                <div class="stat-label">Active KPIs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalDashboards">-</div>
+                <div class="stat-label">Dashboards</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalInsights">-</div>
+                <div class="stat-label">AI Insights</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalReports">-</div>
+                <div class="stat-label">BI Reports</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="dataMiningJobs">-</div>
+                <div class="stat-label">Mining Jobs</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- KPIs Overview -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">📊 Key Performance Indicators</div>
+                        <div class="card-subtitle">Real-time business metrics</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadKPIs()">Refresh</button>
+                </div>
+                <div class="kpi-grid" id="kpiGrid">
+                    <div class="loading">Loading KPIs...</div>
+                </div>
+            </div>
+
+            <!-- Performance Analytics -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">⚡ Performance Analytics</div>
+                        <div class="card-subtitle">System performance metrics over time</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadPerformanceChart()">Refresh</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Mining Results -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">🔍 Data Mining Insights</div>
+                        <div class="card-subtitle">Pattern detection and anomaly analysis</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadDataMiningResults()">Refresh</button>
+                </div>
+                <div id="dataMiningResults">
+                    <div class="loading">Loading mining results...</div>
+                </div>
+            </div>
+
+            <!-- Business Intelligence Reports -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">📈 BI Reports</div>
+                        <div class="card-subtitle">Generated business intelligence reports</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadBIReports()">Refresh</button>
+                </div>
+                <div id="biReports">
+                    <div class="loading">Loading BI reports...</div>
+                </div>
+            </div>
+
+            <!-- Correlation Analysis -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">🔗 Correlation Analysis</div>
+                        <div class="card-subtitle">Data relationships and correlations</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadCorrelationChart()">Refresh</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="correlationChart"></canvas>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">🤖 AI-Generated Insights</div>
+                        <div class="card-subtitle">Automated intelligence discoveries</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadInsights()">Refresh</button>
+                </div>
+                <div id="insightsContainer">
+                    <div class="loading">Loading AI insights...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:3001/api';
+        let performanceChart = null;
+        let correlationChart = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            setInterval(refreshDashboard, 30000); // Refresh every 30 seconds
+        });
+
+        async function initializeDashboard() {
+            try {
+                await Promise.all([
+                    loadDashboardStats(),
+                    loadKPIs(),
+                    loadPerformanceChart(),
+                    loadDataMiningResults(),
+                    loadBIReports(),
+                    loadCorrelationChart(),
+                    loadInsights()
+                ]);
+                updateConnectionStatus(true);
+            } catch (error) {
+                console.error('Dashboard initialization failed:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusIndicator = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (connected) {
+                statusIndicator.className = 'status-indicator status-good';
+                statusText.textContent = 'Connected';
+            } else {
+                statusIndicator.className = 'status-indicator status-critical';
+                statusText.textContent = 'Disconnected';
+            }
+        }
+
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch(`${API_BASE}/bi/summary`);
+                const data = await response.json();
+
+                document.getElementById('totalKPIs').textContent = data.kpis?.total || 0;
+                document.getElementById('totalDashboards').textContent = data.dashboards?.total || 0;
+                document.getElementById('totalInsights').textContent = data.insights?.total || 0;
+                document.getElementById('totalReports').textContent = data.reports?.total || 0;
+                document.getElementById('dataMiningJobs').textContent = data.dataMining?.jobs || 0;
+            } catch (error) {
+                console.error('Failed to load dashboard stats:', error);
+            }
+        }
+
+        async function loadKPIs() {
+            try {
+                const response = await fetch(`${API_BASE}/bi/kpis`);
+                const kpis = await response.json();
+
+                const kpiGrid = document.getElementById('kpiGrid');
+                kpiGrid.innerHTML = '';
+
+                if (kpis.length === 0) {
+                    kpiGrid.innerHTML = '<div class="loading">No KPIs configured</div>';
+                    return;
+                }
+
+                kpis.forEach(kpi => {
+                    const kpiCard = document.createElement('div');
+                    kpiCard.className = 'kpi-card';
+                    
+                    const trendClass = kpi.trend === 'up' ? 'trend-up' : 
+                                     kpi.trend === 'down' ? 'trend-down' : 'trend-stable';
+                    
+                    kpiCard.innerHTML = `
+                        <div class="kpi-value">${formatKPIValue(kpi.currentValue, kpi.format)}</div>
+                        <div class="kpi-name">${kpi.name}</div>
+                        <div class="kpi-trend ${trendClass}">
+                            ${getTrendIcon(kpi.trend)} ${kpi.trendPercent}%
+                        </div>
+                    `;
+                    
+                    kpiGrid.appendChild(kpiCard);
+                });
+            } catch (error) {
+                console.error('Failed to load KPIs:', error);
+                document.getElementById('kpiGrid').innerHTML = '<div class="error">Failed to load KPIs</div>';
+            }
+        }
+
+        async function loadPerformanceChart() {
+            try {
+                const response = await fetch(`${API_BASE}/bi/performance-metrics`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('performanceChart').getContext('2d');
+                
+                if (performanceChart) {
+                    performanceChart.destroy();
+                }
+
+                performanceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.timestamps.map(ts => new Date(ts).toLocaleTimeString()),
+                        datasets: [
+                            {
+                                label: 'Query Performance (ms)',
+                                data: data.queryTimes,
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Memory Usage (%)',
+                                data: data.memoryUsage,
+                                borderColor: '#764ba2',
+                                backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to load performance chart:', error);
+            }
+        }
+
+        async function loadDataMiningResults() {
+            try {
+                const response = await fetch(`${API_BASE}/bi/data-mining-results`);
+                const results = await response.json();
+
+                const container = document.getElementById('dataMiningResults');
+                container.innerHTML = '';
+
+                if (results.length === 0) {
+                    container.innerHTML = '<div class="loading">No data mining results available</div>';
+                    return;
+                }
+
+                results.slice(0, 5).forEach(result => {
+                    const resultCard = document.createElement('div');
+                    resultCard.className = 'insight-card';
+                    resultCard.innerHTML = `
+                        <div class="insight-title">${result.collection} Analysis</div>
+                        <div class="insight-description">
+                            Found ${result.patterns?.length || 0} patterns and 
+                            ${result.anomalies?.length || 0} anomalies
+                        </div>
+                        <div class="insight-timestamp">
+                            ${new Date(result.timestamp).toLocaleString()}
+                        </div>
+                    `;
+                    container.appendChild(resultCard);
+                });
+            } catch (error) {
+                console.error('Failed to load data mining results:', error);
+                document.getElementById('dataMiningResults').innerHTML = 
+                    '<div class="error">Failed to load data mining results</div>';
+            }
+        }
+
+        async function loadBIReports() {
+            try {
+                const response = await fetch(`${API_BASE}/bi/reports`);
+                const reports = await response.json();
+
+                const container = document.getElementById('biReports');
+                container.innerHTML = '';
+
+                if (reports.length === 0) {
+                    container.innerHTML = '<div class="loading">No BI reports available</div>';
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.className = 'data-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Report Name</th>
+                            <th>Type</th>
+                            <th>Generated</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${reports.map(report => `
+                            <tr>
+                                <td>${report.name}</td>
+                                <td>${report.type}</td>
+                                <td>${new Date(report.timestamp).toLocaleDateString()}</td>
+                                <td>
+                                    <span class="status-indicator ${getStatusClass(report.status)}"></span>
+                                    ${report.status}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+
+                container.appendChild(table);
+            } catch (error) {
+                console.error('Failed to load BI reports:', error);
+                document.getElementById('biReports').innerHTML = 
+                    '<div class="error">Failed to load BI reports</div>';
+            }
+        }
+
+        async function loadCorrelationChart() {
+            try {
+                const response = await fetch(`${API_BASE}/bi/correlations`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('correlationChart').getContext('2d');
+                
+                if (correlationChart) {
+                    correlationChart.destroy();
+                }
+
+                correlationChart = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: data.correlations.map((corr, index) => ({
+                            label: `${corr.field1} vs ${corr.field2}`,
+                            data: corr.dataPoints,
+                            backgroundColor: `hsl(${index * 60}, 70%, 50%)`,
+                            borderColor: `hsl(${index * 60}, 70%, 40%)`
+                        }))
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to load correlation chart:', error);
+            }
+        }
+
+        async function loadInsights() {
+            try {
+                const response = await fetch(`${API_BASE}/bi/insights`);
+                const insights = await response.json();
+
+                const container = document.getElementById('insightsContainer');
+                container.innerHTML = '';
+
+                if (insights.length === 0) {
+                    container.innerHTML = '<div class="loading">No AI insights available</div>';
+                    return;
+                }
+
+                insights.slice(0, 6).forEach(insight => {
+                    const insightCard = document.createElement('div');
+                    insightCard.className = 'insight-card';
+                    insightCard.innerHTML = `
+                        <div class="insight-title">${insight.title}</div>
+                        <div class="insight-description">${insight.description}</div>
+                        <div class="insight-timestamp">
+                            Confidence: ${(insight.confidence * 100).toFixed(1)}% | 
+                            ${new Date(insight.timestamp).toLocaleString()}
+                        </div>
+                    `;
+                    container.appendChild(insightCard);
+                });
+            } catch (error) {
+                console.error('Failed to load insights:', error);
+                document.getElementById('insightsContainer').innerHTML = 
+                    '<div class="error">Failed to load AI insights</div>';
+            }
+        }
+
+        function refreshDashboard() {
+            loadDashboardStats();
+            loadKPIs();
+        }
+
+        // Utility functions
+        function formatKPIValue(value, format) {
+            if (format === 'percentage') {
+                return `${value}%`;
+            } else if (format === 'currency') {
+                return `$${value.toLocaleString()}`;
+            } else if (format === 'number') {
+                return value.toLocaleString();
+            }
+            return value;
+        }
+
+        function getTrendIcon(trend) {
+            switch (trend) {
+                case 'up': return '↗️';
+                case 'down': return '↘️';
+                case 'stable': return '➡️';
+                default: return '➡️';
+            }
+        }
+
+        function getStatusClass(status) {
+            switch (status.toLowerCase()) {
+                case 'completed':
+                case 'active':
+                case 'good':
+                    return 'status-good';
+                case 'warning':
+                case 'pending':
+                    return 'status-warning';
+                case 'error':
+                case 'failed':
+                case 'critical':
+                    return 'status-critical';
+                default:
+                    return 'status-good';
+            }
+        }
+
+        // Error handling for fetch requests
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            updateConnectionStatus(false);
+        });
+    </script>
+</body>
+</html>

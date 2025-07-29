@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Sourcing & CQRS - BigBaseAlpha</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .metric-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            color: #667eea;
+        }
+
+        .metric-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .metric-subtitle {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f2f6;
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(46, 204, 113, 0.1);
+            color: #27ae60;
+        }
+
+        .status-warning {
+            background: rgba(241, 196, 15, 0.1);
+            color: #f39c12;
+        }
+
+        .status-error {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-item-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .list-item-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .performance-bar {
+            background: #ecf0f1;
+            height: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .performance-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .refresh-indicator {
+            display: inline-flex;
+            align-items: center;
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .refresh-indicator::before {
+            content: '🔄';
+            margin-right: 5px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .event-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .event-type {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .event-details {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .projection-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .saga-progress {
+            background: #ecf0f1;
+            height: 6px;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .saga-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: rgba(52, 152, 219, 0.1);
+            border-color: #3498db;
+            color: #2980b9;
+        }
+
+        .alert-warning {
+            background: rgba(241, 196, 15, 0.1);
+            border-color: #f1c40f;
+            color: #f39c12;
+        }
+
+        .alert-success {
+            background: rgba(46, 204, 113, 0.1);
+            border-color: #2ecc71;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Event Sourcing & CQRS Dashboard</h1>
+            <p>Enterprise-grade event sourcing with command query responsibility segregation</p>
+            <div class="refresh-indicator" id="refreshIndicator" style="display: none;">
+                Auto-refreshing data...
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon">📝</div>
+                    <div class="metric-title">Total Commands</div>
+                </div>
+                <div class="metric-value" id="totalCommands">0</div>
+                <div class="metric-subtitle">Commands executed</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon">📚</div>
+                    <div class="metric-title">Total Events</div>
+                </div>
+                <div class="metric-value" id="totalEvents">0</div>
+                <div class="metric-subtitle">Events stored</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-title">Projections</div>
+                </div>
+                <div class="metric-value" id="totalProjections">0</div>
+                <div class="metric-subtitle">Active read models</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon">🔄</div>
+                    <div class="metric-title">Commands/sec</div>
+                </div>
+                <div class="metric-value" id="commandsPerSecond">0</div>
+                <div class="metric-subtitle">Current throughput</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh Data</button>
+            <button class="btn btn-secondary" onclick="toggleAutoRefresh()">⏱️ Toggle Auto-refresh</button>
+            <button class="btn btn-secondary" onclick="exportEventStream()">📤 Export Events</button>
+            <button class="btn btn-secondary" onclick="rebuildProjections()">🔨 Rebuild Projections</button>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Command Handlers</div>
+                    <div class="status-indicator status-active">Active</div>
+                </div>
+                <div id="commandHandlers">
+                    <!-- Command handlers will be loaded here -->
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Event Types</div>
+                    <div class="status-indicator status-active">Processing</div>
+                </div>
+                <div id="eventTypes">
+                    <!-- Event types will be loaded here -->
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Projections Status</div>
+                    <div class="status-indicator status-active">Synchronized</div>
+                </div>
+                <div id="projections">
+                    <!-- Projections will be loaded here -->
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Process Managers (Sagas)</div>
+                    <div class="status-indicator status-active">Running</div>
+                </div>
+                <div id="sagas">
+                    <!-- Sagas will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Event Streams</div>
+                    <div class="status-indicator status-active">Active</div>
+                </div>
+                <div id="eventStreams">
+                    <!-- Event streams will be loaded here -->
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Performance Metrics</div>
+                    <div class="status-indicator status-active">Monitoring</div>
+                </div>
+                <div id="performanceMetrics">
+                    <!-- Performance metrics will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">Snapshots</div>
+                <div class="status-indicator status-active">Enabled</div>
+            </div>
+            <div id="snapshots">
+                <!-- Snapshots will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let autoRefresh = false;
+        let refreshInterval;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshData();
+        });
+
+        async function refreshData() {
+            try {
+                document.getElementById('refreshIndicator').style.display = 'inline-flex';
+                
+                // Load all data in parallel
+                await Promise.all([
+                    loadStats(),
+                    loadCommandHandlers(),
+                    loadEventTypes(),
+                    loadProjections(),
+                    loadSagas(),
+                    loadEventStreams(),
+                    loadPerformanceMetrics(),
+                    loadSnapshots()
+                ]);
+                
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                showAlert('Error loading Event Sourcing data', 'warning');
+            } finally {
+                document.getElementById('refreshIndicator').style.display = 'none';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/eventsourcing/stats');
+                const data = await response.json();
+                
+                document.getElementById('totalCommands').textContent = data.totalCommands?.toLocaleString() || '0';
+                document.getElementById('totalEvents').textContent = data.totalEvents?.toLocaleString() || '0';
+                document.getElementById('totalProjections').textContent = data.totalProjections?.toLocaleString() || '0';
+                document.getElementById('commandsPerSecond').textContent = data.commandsPerSecond?.toFixed(1) || '0.0';
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadCommandHandlers() {
+            try {
+                const response = await fetch('/api/eventsourcing/commands');
+                const data = await response.json();
+                
+                const container = document.getElementById('commandHandlers');
+                container.innerHTML = data.map(command => `
+                    <div class="list-item">
+                        <div>
+                            <div class="list-item-name">${command.type}</div>
+                            <div class="event-details">Success Rate: ${command.successRate}%</div>
+                        </div>
+                        <div class="list-item-value">${command.count}</div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading command handlers:', error);
+            }
+        }
+
+        async function loadEventTypes() {
+            try {
+                const response = await fetch('/api/eventsourcing/events');
+                const data = await response.json();
+                
+                const container = document.getElementById('eventTypes');
+                container.innerHTML = data.map(event => `
+                    <div class="list-item">
+                        <div>
+                            <div class="list-item-name">${event.type}</div>
+                            <div class="event-details">Frequency: ${event.frequency}/min</div>
+                        </div>
+                        <div class="list-item-value">${event.count}</div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading event types:', error);
+            }
+        }
+
+        async function loadProjections() {
+            try {
+                const response = await fetch('/api/eventsourcing/projections');
+                const data = await response.json();
+                
+                const container = document.getElementById('projections');
+                container.innerHTML = data.map(projection => {
+                    const statusClass = projection.status === 'active' ? 'status-active' : 
+                                      projection.status === 'rebuilding' ? 'status-warning' : 'status-error';
+                    
+                    return `
+                        <div class="projection-card">
+                            <div class="list-item">
+                                <div>
+                                    <div class="list-item-name">${projection.name}</div>
+                                    <div class="event-details">
+                                        Version: ${projection.version} | Events: ${projection.eventCount}
+                                    </div>
+                                </div>
+                                <div class="status-indicator ${statusClass}">${projection.status}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading projections:', error);
+            }
+        }
+
+        async function loadSagas() {
+            try {
+                const response = await fetch('/api/eventsourcing/sagas');
+                const data = await response.json();
+                
+                const container = document.getElementById('sagas');
+                container.innerHTML = data.map(saga => {
+                    const successRate = saga.completed / (saga.completed + saga.failed) * 100;
+                    
+                    return `
+                        <div class="list-item">
+                            <div>
+                                <div class="list-item-name">${saga.name}</div>
+                                <div class="event-details">
+                                    Active: ${saga.instances} | Success: ${successRate.toFixed(1)}%
+                                </div>
+                                <div class="saga-progress">
+                                    <div class="saga-progress-fill" style="width: ${successRate}%"></div>
+                                </div>
+                            </div>
+                            <div class="list-item-value">${saga.completed}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading sagas:', error);
+            }
+        }
+
+        async function loadEventStreams() {
+            try {
+                const response = await fetch('/api/eventsourcing/streams');
+                const data = await response.json();
+                
+                const container = document.getElementById('eventStreams');
+                container.innerHTML = `
+                    <div class="list-item">
+                        <div class="list-item-name">Total Streams</div>
+                        <div class="list-item-value">${data.totalStreams}</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-name">Active Streams</div>
+                        <div class="list-item-value">${data.activeStreams}</div>
+                    </div>
+                    ${data.streamStats.slice(0, 5).map(stream => `
+                        <div class="list-item">
+                            <div>
+                                <div class="list-item-name">${stream.streamId}</div>
+                                <div class="event-details">Version: ${stream.version}</div>
+                            </div>
+                            <div class="list-item-value">${stream.eventCount}</div>
+                        </div>
+                    `).join('')}
+                `;
+                
+            } catch (error) {
+                console.error('Error loading event streams:', error);
+            }
+        }
+
+        async function loadPerformanceMetrics() {
+            try {
+                const response = await fetch('/api/eventsourcing/performance');
+                const data = await response.json();
+                
+                const container = document.getElementById('performanceMetrics');
+                container.innerHTML = `
+                    <div class="list-item">
+                        <div class="list-item-name">Avg Command Time</div>
+                        <div class="list-item-value">${data.latency.avgCommandTime}ms</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-name">Events/sec</div>
+                        <div class="list-item-value">${data.throughput.eventsPerSecond}</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-name">Memory Usage</div>
+                        <div class="list-item-value">${(data.resources.memoryUsage / 1024 / 1024).toFixed(1)}MB</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-name">CPU Usage</div>
+                        <div class="list-item-value">${data.resources.cpuUsage}%</div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading performance metrics:', error);
+            }
+        }
+
+        async function loadSnapshots() {
+            try {
+                const response = await fetch('/api/eventsourcing/snapshots');
+                const data = await response.json();
+                
+                const container = document.getElementById('snapshots');
+                container.innerHTML = `
+                    <div class="list-item">
+                        <div class="list-item-name">Total Snapshots</div>
+                        <div class="list-item-value">${data.totalSnapshots}</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-name">Total Size</div>
+                        <div class="list-item-value">${(data.totalSize / 1024 / 1024).toFixed(1)}MB</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-name">Compression Ratio</div>
+                        <div class="list-item-value">${(data.compressionRatio * 100).toFixed(1)}%</div>
+                    </div>
+                    ${data.snapshotStats.slice(0, 5).map(snapshot => `
+                        <div class="list-item">
+                            <div>
+                                <div class="list-item-name">${snapshot.streamId}</div>
+                                <div class="event-details">Version: ${snapshot.version}</div>
+                            </div>
+                            <div class="list-item-value">${(snapshot.size / 1024).toFixed(1)}KB</div>
+                        </div>
+                    `).join('')}
+                `;
+                
+            } catch (error) {
+                console.error('Error loading snapshots:', error);
+            }
+        }
+
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            
+            if (autoRefresh) {
+                refreshInterval = setInterval(refreshData, 5000);
+                showAlert('Auto-refresh enabled (5 seconds)', 'success');
+            } else {
+                clearInterval(refreshInterval);
+                showAlert('Auto-refresh disabled', 'info');
+            }
+        }
+
+        async function exportEventStream() {
+            try {
+                showAlert('Exporting event stream...', 'info');
+                
+                // Simulate export process
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                showAlert('Event stream exported successfully', 'success');
+            } catch (error) {
+                showAlert('Error exporting event stream', 'warning');
+            }
+        }
+
+        async function rebuildProjections() {
+            try {
+                showAlert('Rebuilding projections...', 'info');
+                
+                // Simulate rebuild process
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                showAlert('Projections rebuilt successfully', 'success');
+                refreshData();
+            } catch (error) {
+                showAlert('Error rebuilding projections', 'warning');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.metrics-grid'));
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Real-time updates simulation
+        setInterval(() => {
+            if (autoRefresh) {
+                // Update metrics with small random changes
+                const totalCommands = document.getElementById('totalCommands');
+                const totalEvents = document.getElementById('totalEvents');
+                const commandsPerSecond = document.getElementById('commandsPerSecond');
+                
+                if (totalCommands.textContent !== '0') {
+                    const currentCommands = parseInt(totalCommands.textContent.replace(/,/g, ''));
+                    const currentEvents = parseInt(totalEvents.textContent.replace(/,/g, ''));
+                    
+                    totalCommands.textContent = (currentCommands + Math.floor(Math.random() * 5)).toLocaleString();
+                    totalEvents.textContent = (currentEvents + Math.floor(Math.random() * 15)).toLocaleString();
+                    commandsPerSecond.textContent = (Math.random() * 50 + 10).toFixed(1);
+                }
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

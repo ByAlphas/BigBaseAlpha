@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigBaseAlpha - Stream Processing Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header h1 {
+            color: #4f46e5;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(102, 126, 234, 0.1);
+            color: #4f46e5;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.45);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5em;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: #4f46e5;
+        }
+
+        .stream-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+        }
+
+        .processor-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+        }
+
+        .analytics-card {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border: none;
+        }
+
+        .performance-card {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #5a6fd8, #6a4190);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #43e97b, #38f9d7);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #fa709a, #fee140);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .stream-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stream-info {
+            flex: 1;
+        }
+
+        .stream-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stream-stats {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .stream-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-active { background-color: #4CAF50; }
+        .status-inactive { background-color: #f44336; }
+        .status-processing { background-color: #ff9800; }
+
+        .realtime-chart {
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 15px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .alert-info {
+            background: rgba(67, 233, 123, 0.1);
+            color: #43e97b;
+            border: 1px solid rgba(67, 233, 123, 0.2);
+        }
+
+        .alert-warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.2);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table th {
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .nav-tab {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Stream Processing Dashboard</h1>
+            <p>Real-time Data Stream Management & Analytics</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('overview')">📊 Overview</button>
+            <button class="nav-tab" onclick="switchTab('streams')">🌊 Streams</button>
+            <button class="nav-tab" onclick="switchTab('processors')">⚙️ Processors</button>
+            <button class="nav-tab" onclick="switchTab('analytics')">📈 Analytics</button>
+            <button class="nav-tab" onclick="switchTab('monitoring')">🔍 Monitoring</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="dashboard-card stream-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255,255,255,0.2);">🌊</div>
+                        <div class="card-title">Active Streams</div>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total Streams</span>
+                        <span class="metric-value" id="totalStreams">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Active Streams</span>
+                        <span class="metric-value" id="activeStreams">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Events/sec</span>
+                        <span class="metric-value" id="eventsPerSecond">0</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card processor-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255,255,255,0.2);">⚙️</div>
+                        <div class="card-title">Stream Processors</div>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total Processors</span>
+                        <span class="metric-value" id="totalProcessors">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Running</span>
+                        <span class="metric-value" id="runningProcessors">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Processing Rate</span>
+                        <span class="metric-value" id="processingRate">0 ops/s</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card analytics-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255,255,255,0.2);">📈</div>
+                        <div class="card-title">Analytics</div>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Windows Active</span>
+                        <span class="metric-value" id="activeWindows">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Continuous Queries</span>
+                        <span class="metric-value" id="continuousQueries">0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Stream Joins</span>
+                        <span class="metric-value" id="streamJoins">0</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card performance-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255,255,255,0.2);">🚀</div>
+                        <div class="card-title">Performance</div>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Avg Latency</span>
+                        <span class="metric-value" id="avgLatency">0ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Throughput</span>
+                        <span class="metric-value" id="throughput">0 MB/s</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Memory Usage</span>
+                        <span class="metric-value" id="memoryUsage">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(45deg, #667eea, #764ba2);">📊</div>
+                    <div class="card-title">Real-time Processing Chart</div>
+                </div>
+                <div class="realtime-chart">
+                    📈 Real-time processing visualization will appear here
+                </div>
+            </div>
+        </div>
+
+        <!-- Streams Tab -->
+        <div id="streams" class="tab-content">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(45deg, #667eea, #764ba2);">🌊</div>
+                    <div class="card-title">Stream Management</div>
+                </div>
+                <button class="btn btn-primary" onclick="showCreateStreamModal()">➕ Create New Stream</button>
+                <button class="btn btn-success" onclick="refreshStreams()">🔄 Refresh</button>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(45deg, #43e97b, #38f9d7);">📋</div>
+                    <div class="card-title">Active Streams</div>
+                </div>
+                <div id="streamsList">
+                    <div class="alert alert-info">No streams created yet. Create your first stream to get started!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processors Tab -->
+        <div id="processors" class="tab-content">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(45deg, #667eea, #764ba2);">⚙️</div>
+                    <div class="card-title">Processor Management</div>
+                </div>
+                <button class="btn btn-primary" onclick="showCreateProcessorModal()">➕ Create Processor</button>
+                <button class="btn btn-warning" onclick="showCreateWindowModal()">🪟 Create Window</button>
+                <button class="btn btn-success" onclick="refreshProcessors()">🔄 Refresh</button>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(45deg, #4facfe, #00f2fe);">🔧</div>
+                    <div class="card-title">Active Processors</div>
+                </div>
+                <div id="processorsList">
+                    <div class="alert alert-info">No processors configured yet.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(45deg, #667eea, #764ba2);">📊</div>
+                    <div class="card-title">Stream Analytics</div>
+                </div>
+                <button class="btn btn-primary" onclick="createAggregationStream()">📈 Create Aggregation</button>
+                <button class="btn btn-warning" onclick="createContinuousQuery()">🔍 Continuous Query</button>
+                <button class="btn btn-success" onclick="refreshAnalytics()">🔄 Refresh</button>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(45deg, #43e97b, #38f9d7);">📈</div>
+                    <div class="card-title">Analytics Results</div>
+                </div>
+                <div id="analyticsResults">
+                    <div class="alert alert-info">No analytics configured yet.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitoring Tab -->
+        <div id="monitoring" class="tab-content">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(45deg, #667eea, #764ba2);">🔍</div>
+                    <div class="card-title">System Monitoring</div>
+                </div>
+                <button class="btn btn-success" onclick="startMonitoring()">▶️ Start Monitoring</button>
+                <button class="btn btn-danger" onclick="stopMonitoring()">⏹️ Stop Monitoring</button>
+                <button class="btn btn-primary" onclick="refreshMonitoring()">🔄 Refresh</button>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: linear-gradient(45deg, #fa709a, #fee140);">⚡</div>
+                        <div class="card-title">Performance Metrics</div>
+                    </div>
+                    <div id="performanceMetrics">
+                        <div class="metric">
+                            <span class="metric-label">CPU Usage</span>
+                            <span class="metric-value">0%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Memory Usage</span>
+                            <span class="metric-value">0 MB</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Network I/O</span>
+                            <span class="metric-value">0 KB/s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: linear-gradient(45deg, #4facfe, #00f2fe);">📊</div>
+                        <div class="card-title">System Status</div>
+                    </div>
+                    <div id="systemStatus">
+                        <div class="metric">
+                            <span class="metric-label">Engine Status</span>
+                            <span class="metric-value">
+                                <span class="status-indicator status-active"></span>Running
+                            </span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Uptime</span>
+                            <span class="metric-value">0 minutes</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Error Rate</span>
+                            <span class="metric-value">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Stream Modal -->
+    <div id="createStreamModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Stream</h2>
+                <button class="close" onclick="closeModal('createStreamModal')">&times;</button>
+            </div>
+            <form id="createStreamForm">
+                <div class="form-group">
+                    <label class="form-label">Stream ID</label>
+                    <input type="text" class="form-control" id="streamId" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stream Type</label>
+                    <select class="form-control" id="streamType">
+                        <option value="unbounded">Unbounded (Continuous)</option>
+                        <option value="bounded">Bounded (Finite)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data Format</label>
+                    <select class="form-control" id="dataFormat">
+                        <option value="json">JSON</option>
+                        <option value="csv">CSV</option>
+                        <option value="avro">Avro</option>
+                        <option value="protobuf">Protocol Buffers</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-control" id="streamDescription">
+                </div>
+                <button type="submit" class="btn btn-primary">Create Stream</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('createStreamModal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Processor Modal -->
+    <div id="createProcessorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Create Stream Processor</h2>
+                <button class="close" onclick="closeModal('createProcessorModal')">&times;</button>
+            </div>
+            <form id="createProcessorForm">
+                <div class="form-group">
+                    <label class="form-label">Target Stream</label>
+                    <select class="form-control" id="targetStream" required>
+                        <option value="">Select a stream...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Processor Type</label>
+                    <select class="form-control" id="processorType" required>
+                        <option value="filter">Filter</option>
+                        <option value="map">Transform/Map</option>
+                        <option value="reduce">Reduce</option>
+                        <option value="aggregate">Aggregate</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Processing Function</label>
+                    <textarea class="form-control" id="processingFunction" rows="4" 
+                              placeholder="Enter JavaScript function..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Processor</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('createProcessorModal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let streamData = [];
+        let processorData = [];
+        let analyticsData = [];
+        let isMonitoring = false;
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+            
+            // Load data for the selected tab
+            loadTabData(tabName);
+        }
+
+        // Load data for specific tabs
+        function loadTabData(tabName) {
+            switch(tabName) {
+                case 'overview':
+                    loadOverviewData();
+                    break;
+                case 'streams':
+                    loadStreamsData();
+                    break;
+                case 'processors':
+                    loadProcessorsData();
+                    break;
+                case 'analytics':
+                    loadAnalyticsData();
+                    break;
+                case 'monitoring':
+                    loadMonitoringData();
+                    break;
+            }
+        }
+
+        // Load overview data
+        function loadOverviewData() {
+            // Simulate API calls to BigBaseAlpha
+            fetch('/api/stream/analytics')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalStreams').textContent = data.totalStreams || 0;
+                    document.getElementById('activeStreams').textContent = data.activeStreams || 0;
+                    document.getElementById('eventsPerSecond').textContent = data.eventsPerSecond || 0;
+                    document.getElementById('totalProcessors').textContent = data.totalProcessors || 0;
+                    document.getElementById('runningProcessors').textContent = data.runningProcessors || 0;
+                    document.getElementById('processingRate').textContent = (data.processingRate || 0) + ' ops/s';
+                    document.getElementById('activeWindows').textContent = data.activeWindows || 0;
+                    document.getElementById('continuousQueries').textContent = data.continuousQueries || 0;
+                    document.getElementById('streamJoins').textContent = data.streamJoins || 0;
+                    document.getElementById('avgLatency').textContent = (data.avgLatency || 0) + 'ms';
+                    document.getElementById('throughput').textContent = (data.throughput || 0) + ' MB/s';
+                    document.getElementById('memoryUsage').textContent = (data.memoryUsage || 0) + '%';
+                })
+                .catch(error => {
+                    console.error('Error loading overview data:', error);
+                    // Set default values
+                    setDefaultOverviewValues();
+                });
+        }
+
+        function setDefaultOverviewValues() {
+            document.getElementById('totalStreams').textContent = '0';
+            document.getElementById('activeStreams').textContent = '0';
+            document.getElementById('eventsPerSecond').textContent = '0';
+            document.getElementById('totalProcessors').textContent = '0';
+            document.getElementById('runningProcessors').textContent = '0';
+            document.getElementById('processingRate').textContent = '0 ops/s';
+            document.getElementById('activeWindows').textContent = '0';
+            document.getElementById('continuousQueries').textContent = '0';
+            document.getElementById('streamJoins').textContent = '0';
+            document.getElementById('avgLatency').textContent = '0ms';
+            document.getElementById('throughput').textContent = '0 MB/s';
+            document.getElementById('memoryUsage').textContent = '0%';
+        }
+
+        // Load streams data
+        function loadStreamsData() {
+            fetch('/api/streams')
+                .then(response => response.json())
+                .then(data => {
+                    streamData = data;
+                    renderStreams();
+                })
+                .catch(error => {
+                    console.error('Error loading streams:', error);
+                    streamData = [];
+                    renderStreams();
+                });
+        }
+
+        function renderStreams() {
+            const streamsList = document.getElementById('streamsList');
+            
+            if (streamData.length === 0) {
+                streamsList.innerHTML = '<div class="alert alert-info">No streams created yet. Create your first stream to get started!</div>';
+                return;
+            }
+
+            const streamsHTML = streamData.map(stream => `
+                <div class="stream-item">
+                    <div class="stream-info">
+                        <div class="stream-name">
+                            <span class="status-indicator ${stream.active ? 'status-active' : 'status-inactive'}"></span>
+                            ${stream.id}
+                        </div>
+                        <div class="stream-stats">
+                            Type: ${stream.type} | Format: ${stream.format} | Events: ${stream.eventCount || 0}
+                        </div>
+                    </div>
+                    <div class="stream-actions">
+                        <button class="btn btn-primary" onclick="publishToStream('${stream.id}')">📤 Publish</button>
+                        <button class="btn btn-warning" onclick="viewStreamDetails('${stream.id}')">👁️ Details</button>
+                        <button class="btn btn-danger" onclick="deleteStream('${stream.id}')">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+
+            streamsList.innerHTML = streamsHTML;
+        }
+
+        // Load processors data
+        function loadProcessorsData() {
+            fetch('/api/processors')
+                .then(response => response.json())
+                .then(data => {
+                    processorData = data;
+                    renderProcessors();
+                })
+                .catch(error => {
+                    console.error('Error loading processors:', error);
+                    processorData = [];
+                    renderProcessors();
+                });
+        }
+
+        function renderProcessors() {
+            const processorsList = document.getElementById('processorsList');
+            
+            if (processorData.length === 0) {
+                processorsList.innerHTML = '<div class="alert alert-info">No processors configured yet.</div>';
+                return;
+            }
+
+            const processorsHTML = processorData.map(processor => `
+                <div class="stream-item">
+                    <div class="stream-info">
+                        <div class="stream-name">
+                            <span class="status-indicator ${processor.active ? 'status-active' : 'status-inactive'}"></span>
+                            ${processor.id} (${processor.type})
+                        </div>
+                        <div class="stream-stats">
+                            Stream: ${processor.streamId} | Processed: ${processor.processedCount || 0}
+                        </div>
+                    </div>
+                    <div class="stream-actions">
+                        <button class="btn btn-warning" onclick="viewProcessorDetails('${processor.id}')">👁️ Details</button>
+                        <button class="btn btn-danger" onclick="deleteProcessor('${processor.id}')">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+
+            processorsList.innerHTML = processorsHTML;
+        }
+
+        // Load analytics data
+        function loadAnalyticsData() {
+            fetch('/api/analytics')
+                .then(response => response.json())
+                .then(data => {
+                    analyticsData = data;
+                    renderAnalytics();
+                })
+                .catch(error => {
+                    console.error('Error loading analytics:', error);
+                    analyticsData = [];
+                    renderAnalytics();
+                });
+        }
+
+        function renderAnalytics() {
+            const analyticsResults = document.getElementById('analyticsResults');
+            
+            if (analyticsData.length === 0) {
+                analyticsResults.innerHTML = '<div class="alert alert-info">No analytics configured yet.</div>';
+                return;
+            }
+
+            const analyticsHTML = analyticsData.map(analytics => `
+                <div class="stream-item">
+                    <div class="stream-info">
+                        <div class="stream-name">${analytics.name} (${analytics.type})</div>
+                        <div class="stream-stats">
+                            Stream: ${analytics.streamId} | Last Result: ${analytics.lastResult || 'N/A'}
+                        </div>
+                    </div>
+                    <div class="stream-actions">
+                        <button class="btn btn-primary" onclick="viewAnalyticsDetails('${analytics.id}')">📊 View Results</button>
+                        <button class="btn btn-danger" onclick="deleteAnalytics('${analytics.id}')">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+
+            analyticsResults.innerHTML = analyticsHTML;
+        }
+
+        // Load monitoring data
+        function loadMonitoringData() {
+            if (isMonitoring) {
+                fetch('/api/stream/performance')
+                    .then(response => response.json())
+                    .then(data => {
+                        updatePerformanceMetrics(data);
+                    })
+                    .catch(error => {
+                        console.error('Error loading performance data:', error);
+                    });
+
+                fetch('/api/stream/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        updateSystemStatus(data);
+                    })
+                    .catch(error => {
+                        console.error('Error loading system status:', error);
+                    });
+            }
+        }
+
+        function updatePerformanceMetrics(data) {
+            // Update performance metrics display
+        }
+
+        function updateSystemStatus(data) {
+            // Update system status display
+        }
+
+        // Modal functions
+        function showCreateStreamModal() {
+            document.getElementById('createStreamModal').style.display = 'block';
+        }
+
+        function showCreateProcessorModal() {
+            loadStreamOptions();
+            document.getElementById('createProcessorModal').style.display = 'block';
+        }
+
+        function showCreateWindowModal() {
+            // Implementation for window creation modal
+            alert('Window creation modal - Implementation pending');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function loadStreamOptions() {
+            const select = document.getElementById('targetStream');
+            select.innerHTML = '<option value="">Select a stream...</option>';
+            
+            streamData.forEach(stream => {
+                const option = document.createElement('option');
+                option.value = stream.id;
+                option.textContent = stream.id;
+                select.appendChild(option);
+            });
+        }
+
+        // Form handlers
+        document.getElementById('createStreamForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const streamData = {
+                id: document.getElementById('streamId').value,
+                type: document.getElementById('streamType').value,
+                format: document.getElementById('dataFormat').value,
+                description: document.getElementById('streamDescription').value
+            };
+
+            fetch('/api/streams', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(streamData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Stream created successfully!');
+                closeModal('createStreamModal');
+                loadStreamsData();
+                document.getElementById('createStreamForm').reset();
+            })
+            .catch(error => {
+                console.error('Error creating stream:', error);
+                alert('Error creating stream: ' + error.message);
+            });
+        });
+
+        document.getElementById('createProcessorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const processorData = {
+                streamId: document.getElementById('targetStream').value,
+                type: document.getElementById('processorType').value,
+                function: document.getElementById('processingFunction').value
+            };
+
+            fetch('/api/processors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(processorData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Processor created successfully!');
+                closeModal('createProcessorModal');
+                loadProcessorsData();
+                document.getElementById('createProcessorForm').reset();
+            })
+            .catch(error => {
+                console.error('Error creating processor:', error);
+                alert('Error creating processor: ' + error.message);
+            });
+        });
+
+        // Action functions
+        function refreshStreams() {
+            loadStreamsData();
+        }
+
+        function refreshProcessors() {
+            loadProcessorsData();
+        }
+
+        function refreshAnalytics() {
+            loadAnalyticsData();
+        }
+
+        function refreshMonitoring() {
+            loadMonitoringData();
+        }
+
+        function publishToStream(streamId) {
+            const event = prompt('Enter event data (JSON format):');
+            if (event) {
+                try {
+                    const eventData = JSON.parse(event);
+                    fetch(`/api/streams/${streamId}/publish`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(eventData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Event published successfully!');
+                        loadStreamsData();
+                    })
+                    .catch(error => {
+                        console.error('Error publishing event:', error);
+                        alert('Error publishing event: ' + error.message);
+                    });
+                } catch (e) {
+                    alert('Invalid JSON format');
+                }
+            }
+        }
+
+        function deleteStream(streamId) {
+            if (confirm(`Are you sure you want to delete stream ${streamId}?`)) {
+                fetch(`/api/streams/${streamId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Stream deleted successfully!');
+                    loadStreamsData();
+                })
+                .catch(error => {
+                    console.error('Error deleting stream:', error);
+                    alert('Error deleting stream: ' + error.message);
+                });
+            }
+        }
+
+        function startMonitoring() {
+            isMonitoring = true;
+            // Start periodic updates
+            setInterval(() => {
+                if (isMonitoring) {
+                    loadMonitoringData();
+                }
+            }, 5000);
+            alert('Monitoring started');
+        }
+
+        function stopMonitoring() {
+            isMonitoring = false;
+            alert('Monitoring stopped');
+        }
+
+        function createAggregationStream() {
+            const sourceStream = prompt('Enter source stream ID:');
+            if (sourceStream) {
+                const config = {
+                    type: 'sum',
+                    field: 'value',
+                    windowSize: 5000
+                };
+                
+                fetch('/api/analytics/aggregation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ sourceStreamId: sourceStream, config })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Aggregation stream created successfully!');
+                    loadAnalyticsData();
+                })
+                .catch(error => {
+                    console.error('Error creating aggregation stream:', error);
+                    alert('Error creating aggregation stream: ' + error.message);
+                });
+            }
+        }
+
+        function createContinuousQuery() {
+            alert('Continuous query creation - Implementation pending');
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOverviewData();
+            setDefaultOverviewValues();
+            
+            // Set up periodic refresh for overview
+            setInterval(() => {
+                if (document.getElementById('overview').classList.contains('active')) {
+                    loadOverviewData();
+                }
+            }, 10000);
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

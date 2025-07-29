@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigBaseAlpha - Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">BigBaseAlpha</h1>
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#overview" class="nav-link active" data-tab="overview">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Overview</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#collections" class="nav-link" data-tab="collections">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Collections</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#query-builder" class="nav-link" data-tab="query-builder">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Query Builder</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#analytics" class="nav-link" data-tab="analytics">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 001.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Analytics</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#realtime-charts" class="nav-link" data-tab="realtime-charts">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/>
+                                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Real-time Charts</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#health-monitor" class="nav-link" data-tab="health-monitor">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Health Monitor</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#backup-manager" class="nav-link" data-tab="backup-manager">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z"/>
+                                    <path d="M6 8a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zM6 11a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1z"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Backup & Export</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#security" class="nav-link" data-tab="security">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Security</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../../eventsourcing.html" class="nav-link external-link" title="Event Sourcing & CQRS">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Event Sourcing</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../../blockchain.html" class="nav-link external-link" title="Blockchain Integration">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Blockchain</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#settings" class="nav-link" data-tab="settings">
+                            <span class="nav-icon">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                                </svg>
+                            </span>
+                            <span class="nav-text">Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="theme-selector">
+                    <div class="theme-header">
+                        <svg class="theme-header-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="theme-header-text">Theme</span>
+                    </div>
+                    
+                    <div class="theme-options">
+                        <button class="theme-option active" data-theme="dark" id="theme-dark">
+                            <svg class="theme-option-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="theme-option-text">Dark</span>
+                            <div class="theme-option-indicator"></div>
+                        </button>
+                        
+                        <button class="theme-option" data-theme="light" id="theme-light">
+                            <svg class="theme-option-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="theme-option-text">Light</span>
+                            <div class="theme-option-indicator"></div>
+                        </button>
+                        
+                        <button class="theme-option" data-theme="auto" id="theme-auto">
+                            <svg class="theme-option-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="theme-option-text">Auto</span>
+                            <div class="theme-option-indicator"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h2 class="page-title" id="page-title">Dashboard Overview</h2>
+                    <p class="page-subtitle" id="page-subtitle">Welcome to BigBaseAlpha Management Console</p>
+                </div>
+                <div class="header-right">
+                    <div class="header-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Collections</span>
+                            <span class="stat-value" id="total-collections">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Records</span>
+                            <span class="stat-value" id="total-records">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Storage</span>
+                            <span class="stat-value" id="storage-used">0 MB</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Tab Contents -->
+            <div class="tab-content">
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-pane active">
+                    <div class="overview-grid">
+                        <!-- Quick Stats Cards -->
+                        <div class="overview-card quick-stats">
+                            <div class="card-header">
+                                <h3>Database Statistics</h3>
+                                <span class="card-icon">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="card-content">
+                                <div class="stat-grid">
+                                    <div class="stat-box">
+                                        <div class="stat-number" id="overview-collections">12</div>
+                                        <div class="stat-description">Active Collections</div>
+                                        <div class="stat-trend positive">+2 this week</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-number" id="overview-records">1,234</div>
+                                        <div class="stat-description">Total Records</div>
+                                        <div class="stat-trend positive">+156 today</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-number" id="overview-storage">45.2 MB</div>
+                                        <div class="stat-description">Storage Used</div>
+                                        <div class="stat-trend neutral">2.3% of limit</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-number" id="overview-uptime">99.9%</div>
+                                        <div class="stat-description">Uptime</div>
+                                        <div class="stat-trend positive">24/7 running</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metrics -->
+                        <div class="overview-card performance-card">
+                            <div class="card-header">
+                                <h3>Performance Metrics</h3>
+                                <span class="card-icon">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="card-content">
+                                <div class="performance-grid">
+                                    <div class="performance-item">
+                                        <div class="performance-label">Avg Response Time</div>
+                                        <div class="performance-value">
+                                            <span class="value">12ms</span>
+                                            <div class="performance-bar">
+                                                <div class="performance-fill" style="width: 85%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="performance-item">
+                                        <div class="performance-label">Queries/Second</div>
+                                        <div class="performance-value">
+                                            <span class="value">847</span>
+                                            <div class="performance-bar">
+                                                <div class="performance-fill" style="width: 70%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="performance-item">
+                                        <div class="performance-label">Cache Hit Rate</div>
+                                        <div class="performance-value">
+                                            <span class="value">94.2%</span>
+                                            <div class="performance-bar">
+                                                <div class="performance-fill" style="width: 94%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="performance-item">
+                                        <div class="performance-label">Memory Usage</div>
+                                        <div class="performance-value">
+                                            <span class="value">68%</span>
+                                            <div class="performance-bar">
+                                                <div class="performance-fill warning" style="width: 68%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="overview-card activity-card">
+                            <div class="card-header">
+                                <h3>Recent Activity</h3>
+                                <span class="card-icon">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                </span>
+                                <div class="card-actions">
+                                    <button class="btn btn-outline btn-sm">View All</button>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="activity-list">
+                                    <div class="activity-item">
+                                        <div class="activity-icon success">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">New record added to 'users' collection</div>
+                                            <div class="activity-meta">
+                                                <span class="activity-time">2 minutes ago</span>
+                                                <span class="activity-user">by admin</span>
+                                            </div>
+                                        </div>
+                                        <div class="activity-status">
+                                            <span class="status-badge success">Success</span>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon info">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">Complex query executed on 'products' collection</div>
+                                            <div class="activity-meta">
+                                                <span class="activity-time">5 minutes ago</span>
+                                                <span class="activity-details">Returned 247 results in 23ms</span>
+                                            </div>
+                                        </div>
+                                        <div class="activity-status">
+                                            <span class="status-badge info">Query</span>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon warning">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z"/>
+                                                <path d="M6 8a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zM6 11a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">Automatic backup created</div>
+                                            <div class="activity-meta">
+                                                <span class="activity-time">1 hour ago</span>
+                                                <span class="activity-details">Size: 127.5 MB</span>
+                                            </div>
+                                        </div>
+                                        <div class="activity-status">
+                                            <span class="status-badge warning">Backup</span>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon error">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">Failed connection attempt detected</div>
+                                            <div class="activity-meta">
+                                                <span class="activity-time">3 hours ago</span>
+                                                <span class="activity-details">IP: 192.168.1.xxx</span>
+                                            </div>
+                                        </div>
+                                        <div class="activity-status">
+                                            <span class="status-badge error">Security</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Health -->
+                        <div class="overview-card health-card">
+                            <div class="card-header">
+                                <h3>System Health</h3>
+                                <span class="card-icon">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                                    </svg>
+                                </span>
+                                <div class="health-indicator">
+                                    <span class="status-text">Healthy</span>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="health-grid">
+                                    <div class="health-item">
+                                        <div class="health-icon">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="health-info">
+                                            <div class="health-label">CPU Usage</div>
+                                            <div class="health-value">23%</div>
+                                            <div class="health-status good">Normal</div>
+                                        </div>
+                                    </div>
+                                    <div class="health-item">
+                                        <div class="health-icon">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M3 4a1 1 0 000 2v9a2 2 0 002 2h2a1 1 0 100-2H5V6a1 1 0 000-2zm0 0h6V2a1 1 0 10-2 0H3zM13 2a1 1 0 11-2 0h4a1 1 0 000 2v9a2 2 0 01-2 2h-2a1 1 0 100 2h2a4 4 0 004-4V4a1 1 0 000-2h-4z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="health-info">
+                                            <div class="health-label">Memory</div>
+                                            <div class="health-value">68%</div>
+                                            <div class="health-status warning">High</div>
+                                        </div>
+                                    </div>
+                                    <div class="health-item">
+                                        <div class="health-icon">💽</div>
+                                        <div class="health-info">
+                                            <div class="health-label">Disk I/O</div>
+                                            <div class="health-value">12%</div>
+                                            <div class="health-status good">Low</div>
+                                        </div>
+                                    </div>
+                                    <div class="health-item">
+                                        <div class="health-icon">🌐</div>
+                                        <div class="health-info">
+                                            <div class="health-label">Network</div>
+                                            <div class="health-value">5 Mbps</div>
+                                            <div class="health-status good">Stable</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="overview-card actions-card">
+                            <div class="card-header">
+                                <h3>Quick Actions</h3>
+                                <span class="card-icon">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="card-content">
+                                <div class="actions-grid">
+                                    <button class="action-btn" onclick="dashboard.switchTab('collections')">
+                                        <div class="action-icon">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="action-text">
+                                            <div class="action-title">Manage Collections</div>
+                                            <div class="action-desc">Create, edit, and organize</div>
+                                        </div>
+                                    </button>
+                                    <button class="action-btn" onclick="dashboard.switchTab('query-builder')">
+                                        <div class="action-icon">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="action-text">
+                                            <div class="action-title">Query Builder</div>
+                                            <div class="action-desc">Build complex queries</div>
+                                        </div>
+                                    </button>
+                                    <button class="action-btn" onclick="dashboard.switchTab('backup-manager')">
+                                        <div class="action-icon">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z"/>
+                                                <path d="M6 8a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zM6 11a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="action-text">
+                                            <div class="action-title">Create Backup</div>
+                                            <div class="action-desc">Backup your database</div>
+                                        </div>
+                                    </button>
+                                    <button class="action-btn" onclick="dashboard.switchTab('analytics')">
+                                        <div class="action-icon">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="action-text">
+                                            <div class="action-title">View Analytics</div>
+                                            <div class="action-desc">Performance insights</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Chart - Full Width -->
+                        <div class="overview-card chart-card wide">
+                            <div class="card-header">
+                                <h3>Performance Overview</h3>
+                                <span class="card-icon">📈</span>
+                                <div class="chart-controls">
+                                    <select class="chart-timeframe">
+                                        <option value="1h">Last Hour</option>
+                                        <option value="24h" selected>Last 24 Hours</option>
+                                        <option value="7d">Last 7 Days</option>
+                                        <option value="30d">Last 30 Days</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="chart-container">
+                                    <canvas id="performance-chart" width="800" height="300"></canvas>
+                                </div>
+                                <div class="chart-legend">
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #6366f1;"></span>
+                                        <span class="legend-label">Queries per minute</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color" style="background: #10b981;"></span>
+                                        <span class="legend-label">Response time (ms)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collections Tab -->
+                <div id="collections" class="tab-pane">
+                    <div class="collections-dashboard">
+                        <div class="collections-header">
+                            <h2>Database Collections</h2>
+                            <div class="collections-actions">
+                                <button class="btn btn-secondary" id="refresh-collections">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+                                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Refresh
+                                </button>
+                                <button class="btn btn-primary" id="create-collection">+ Create Collection</button>
+                            </div>
+                        </div>
+
+                        <div class="collections-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">📁</div>
+                                <div class="stat-content">
+                                    <div class="stat-value" id="collections-total">4</div>
+                                    <div class="stat-label">Total Collections</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">📄</div>
+                                <div class="stat-content">
+                                    <div class="stat-value" id="collections-documents">1,247</div>
+                                    <div class="stat-label">Total Documents</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💾</div>
+                                <div class="stat-content">
+                                    <div class="stat-value" id="collections-size">45.2 MB</div>
+                                    <div class="stat-label">Total Size</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">🔄</div>
+                                <div class="stat-content">
+                                    <div class="stat-value" id="collections-activity">2 min ago</div>
+                                    <div class="stat-label">Last Activity</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="collections-grid">
+                            <div class="collection-card">
+                                <div class="collection-header">
+                                    <h4>👥 users</h4>
+                                    <div class="collection-status active">Active</div>
+                                </div>
+                                <div class="collection-stats">
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Documents:</span>
+                                        <span class="stat-value">245</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Size:</span>
+                                        <span class="stat-value">12.3 MB</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Indexes:</span>
+                                        <span class="stat-value">3</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Last Modified:</span>
+                                        <span class="stat-value">2 hours ago</span>
+                                    </div>
+                                </div>
+                                <div class="collection-schema">
+                                    <h5>Schema Fields:</h5>
+                                    <div class="schema-fields">
+                                        <span class="schema-field">name <small>(string)</small></span>
+                                        <span class="schema-field">email <small>(string)</small></span>
+                                        <span class="schema-field">age <small>(number)</small></span>
+                                        <span class="schema-field">status <small>(string)</small></span>
+                                    </div>
+                                </div>
+                                <div class="collection-actions">
+                                    <button class="btn btn-outline btn-sm">📊 Browse</button>
+                                    <button class="btn btn-secondary btn-sm">⚙️ Manage</button>
+                                    <button class="btn btn-primary btn-sm">🔍 Query</button>
+                                </div>
+                            </div>
+
+                            <div class="collection-card">
+                                <div class="collection-header">
+                                    <h4>🛍️ products</h4>
+                                    <div class="collection-status active">Active</div>
+                                </div>
+                                <div class="collection-stats">
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Documents:</span>
+                                        <span class="stat-value">156</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Size:</span>
+                                        <span class="stat-value">8.7 MB</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Indexes:</span>
+                                        <span class="stat-value">2</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Last Modified:</span>
+                                        <span class="stat-value">5 hours ago</span>
+                                    </div>
+                                </div>
+                                <div class="collection-schema">
+                                    <h5>Schema Fields:</h5>
+                                    <div class="schema-fields">
+                                        <span class="schema-field">name <small>(string)</small></span>
+                                        <span class="schema-field">price <small>(number)</small></span>
+                                        <span class="schema-field">category <small>(string)</small></span>
+                                        <span class="schema-field">inStock <small>(boolean)</small></span>
+                                    </div>
+                                </div>
+                                <div class="collection-actions">
+                                    <button class="btn btn-outline btn-sm">📊 Browse</button>
+                                    <button class="btn btn-secondary btn-sm">⚙️ Manage</button>
+                                    <button class="btn btn-primary btn-sm">🔍 Query</button>
+                                </div>
+                            </div>
+
+                            <div class="collection-card">
+                                <div class="collection-header">
+                                    <h4>📦 orders</h4>
+                                    <div class="collection-status active">Active</div>
+                                </div>
+                                <div class="collection-stats">
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Documents:</span>
+                                        <span class="stat-value">789</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Size:</span>
+                                        <span class="stat-value">23.1 MB</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Indexes:</span>
+                                        <span class="stat-value">4</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Last Modified:</span>
+                                        <span class="stat-value">30 min ago</span>
+                                    </div>
+                                </div>
+                                <div class="collection-schema">
+                                    <h5>Schema Fields:</h5>
+                                    <div class="schema-fields">
+                                        <span class="schema-field">orderId <small>(string)</small></span>
+                                        <span class="schema-field">userId <small>(string)</small></span>
+                                        <span class="schema-field">total <small>(number)</small></span>
+                                        <span class="schema-field">status <small>(string)</small></span>
+                                    </div>
+                                </div>
+                                <div class="collection-actions">
+                                    <button class="btn btn-outline btn-sm">📊 Browse</button>
+                                    <button class="btn btn-secondary btn-sm">⚙️ Manage</button>
+                                    <button class="btn btn-primary btn-sm">🔍 Query</button>
+                                </div>
+                            </div>
+
+                            <div class="collection-card">
+                                <div class="collection-header">
+                                    <h4>📋 logs</h4>
+                                    <div class="collection-status warning">High Volume</div>
+                                </div>
+                                <div class="collection-stats">
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Documents:</span>
+                                        <span class="stat-value">57,234</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Size:</span>
+                                        <span class="stat-value">1.1 GB</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Indexes:</span>
+                                        <span class="stat-value">5</span>
+                                    </div>
+                                    <div class="collection-stat">
+                                        <span class="stat-label">Last Modified:</span>
+                                        <span class="stat-value">1 min ago</span>
+                                    </div>
+                                </div>
+                                <div class="collection-schema">
+                                    <h5>Schema Fields:</h5>
+                                    <div class="schema-fields">
+                                        <span class="schema-field">timestamp <small>(date)</small></span>
+                                        <span class="schema-field">level <small>(string)</small></span>
+                                        <span class="schema-field">message <small>(string)</small></span>
+                                        <span class="schema-field">source <small>(string)</small></span>
+                                    </div>
+                                </div>
+                                <div class="collection-actions">
+                                    <button class="btn btn-outline btn-sm">📊 Browse</button>
+                                    <button class="btn btn-secondary btn-sm">⚙️ Manage</button>
+                                    <button class="btn btn-primary btn-sm">🔍 Query</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collection Management Panel -->
+                        <div class="collection-management" id="collection-management" style="display: none;">
+                            <div class="management-header">
+                                <h3>Collection Management</h3>
+                                <button class="btn btn-secondary" id="close-management">✕ Close</button>
+                            </div>
+                            <div class="management-content">
+                                <div class="management-tabs">
+                                    <button class="tab-btn active" data-tab="indexes">Indexes</button>
+                                    <button class="tab-btn" data-tab="schema">Schema</button>
+                                    <button class="tab-btn" data-tab="permissions">Permissions</button>
+                                    <button class="tab-btn" data-tab="maintenance">Maintenance</button>
+                                </div>
+                                <div class="management-content">
+                                    <!-- Tab content would be dynamically loaded here -->
+                                    <div class="placeholder-content">
+                                        <p>Select a management option to configure collection settings</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Query Builder Tab -->
+                <div id="query-builder" class="tab-pane">
+                    <div class="query-builder-dashboard">
+                        <div class="query-builder-header">
+                            <h2>Advanced Query Builder</h2>
+                            <div class="query-actions">
+                                <button class="btn btn-secondary" id="clear-query">Clear</button>
+                                <button class="btn btn-primary" id="execute-query">Execute Query</button>
+                                <button class="btn btn-success" id="save-query">Save Query</button>
+                            </div>
+                        </div>
+
+                        <div class="query-builder-grid">
+                            <!-- Collection Selector -->
+                            <div class="query-card">
+                                <h3>Collection</h3>
+                                <select class="form-select" id="collection-select">
+                                    <option value="">Select Collection</option>
+                                    <option value="users">users</option>
+                                    <option value="products">products</option>
+                                    <option value="orders">orders</option>
+                                    <option value="logs">logs</option>
+                                </select>
+                            </div>
+
+                            <!-- Query Type -->
+                            <div class="query-card">
+                                <h3>Query Type</h3>
+                                <div class="query-type-buttons">
+                                    <button class="btn btn-outline query-type-btn active" data-type="find">Find</button>
+                                    <button class="btn btn-outline query-type-btn" data-type="findOne">Find One</button>
+                                    <button class="btn btn-outline query-type-btn" data-type="count">Count</button>
+                                    <button class="btn btn-outline query-type-btn" data-type="aggregate">Aggregate</button>
+                                </div>
+                            </div>
+
+                            <!-- Filters -->
+                            <div class="query-card wide">
+                                <h3>Filters</h3>
+                                <div class="filter-builder" id="filter-builder">
+                                    <div class="filter-row">
+                                        <select class="filter-field">
+                                            <option value="">Select Field</option>
+                                            <option value="name">name</option>
+                                            <option value="email">email</option>
+                                            <option value="age">age</option>
+                                            <option value="status">status</option>
+                                        </select>
+                                        <select class="filter-operator">
+                                            <option value="$eq">equals</option>
+                                            <option value="$ne">not equals</option>
+                                            <option value="$gt">greater than</option>
+                                            <option value="$gte">greater than or equal</option>
+                                            <option value="$lt">less than</option>
+                                            <option value="$lte">less than or equal</option>
+                                            <option value="$in">in</option>
+                                            <option value="$nin">not in</option>
+                                            <option value="$regex">regex</option>
+                                        </select>
+                                        <input type="text" class="filter-value" placeholder="Value">
+                                        <button class="btn btn-secondary btn-sm remove-filter">Remove</button>
+                                    </div>
+                                    <button class="btn btn-outline" id="add-filter">+ Add Filter</button>
+                                </div>
+                            </div>
+
+                            <!-- Options -->
+                            <div class="query-card">
+                                <h3>Options</h3>
+                                <div class="options-grid">
+                                    <div class="option-row">
+                                        <label>Limit:</label>
+                                        <input type="number" class="form-input" id="query-limit" value="10" min="1" max="1000">
+                                    </div>
+                                    <div class="option-row">
+                                        <label>Skip:</label>
+                                        <input type="number" class="form-input" id="query-skip" value="0" min="0">
+                                    </div>
+                                    <div class="option-row">
+                                        <label>Sort:</label>
+                                        <div class="sort-controls">
+                                            <select class="form-select" id="sort-field">
+                                                <option value="">No sorting</option>
+                                                <option value="name">name</option>
+                                                <option value="email">email</option>
+                                                <option value="age">age</option>
+                                                <option value="createdAt">createdAt</option>
+                                            </select>
+                                            <select class="form-select" id="sort-order">
+                                                <option value="1">Ascending</option>
+                                                <option value="-1">Descending</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Generated Query -->
+                            <div class="query-card wide">
+                                <h3>Generated Query</h3>
+                                <div class="query-preview">
+                                    <pre id="query-preview-content">{}</pre>
+                                    <button class="btn btn-secondary btn-sm" id="copy-query">Copy Query</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Query Results -->
+                        <div class="query-results">
+                            <div class="results-header">
+                                <h3>Query Results</h3>
+                                <div class="results-info">
+                                    <span id="results-count">0 results</span>
+                                    <span id="execution-time">0ms</span>
+                                </div>
+                            </div>
+                            <div class="results-content">
+                                <div class="results-table-container">
+                                    <table class="results-table" id="results-table">
+                                        <thead>
+                                            <tr id="results-header">
+                                                <th>No data</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="results-body">
+                                            <tr>
+                                                <td colspan="100%" class="no-results">Execute a query to see results</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Saved Queries -->
+                        <div class="saved-queries">
+                            <h3>Saved Queries</h3>
+                            <div class="saved-queries-list" id="saved-queries-list">
+                                <div class="saved-query-item">
+                                    <div class="query-info">
+                                        <h4>Active Users</h4>
+                                        <p>Find all users with status = "active"</p>
+                                    </div>
+                                    <div class="query-actions">
+                                        <button class="btn btn-secondary btn-sm">Load</button>
+                                        <button class="btn btn-danger btn-sm">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="saved-query-item">
+                                    <div class="query-info">
+                                        <h4>Recent Orders</h4>
+                                        <p>Find orders from last 7 days</p>
+                                    </div>
+                                    <div class="query-actions">
+                                        <button class="btn btn-secondary btn-sm">Load</button>
+                                        <button class="btn btn-danger btn-sm">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics" class="tab-pane">
+                    <div id="analytics-dashboard"></div>
+                </div>
+
+                <!-- Real-time Charts Tab -->
+                <div id="realtime-charts" class="tab-pane">
+                    <div class="realtime-dashboard">
+                        <div class="dashboard-header">
+                            <h2>Real-time Performance Monitoring</h2>
+                            <div class="dashboard-controls">
+                                <button class="btn btn-secondary" id="pause-charts">⏸️ Pause</button>
+                                <button class="btn btn-primary" id="refresh-charts">🔄 Refresh</button>
+                                <select class="form-select" id="chart-timeframe">
+                                    <option value="1">Last 1 Hour</option>
+                                    <option value="6">Last 6 Hours</option>
+                                    <option value="24">Last 24 Hours</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Metrics Grid -->
+                        <div class="realtime-grid">
+                            <!-- Live System Metrics -->
+                            <div class="chart-card live-metrics">
+                                <div class="card-header">
+                                    <h3>System Metrics</h3>
+                                    <div class="live-indicator">
+                                        <span class="pulse-dot"></span>
+                                        <span>Live</span>
+                                    </div>
+                                </div>
+                                <div class="metrics-display">
+                                    <div class="metric-item">
+                                        <span class="metric-label">Operations/sec</span>
+                                        <span class="metric-value" id="live-ops">--</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Memory Usage</span>
+                                        <span class="metric-value" id="live-memory">--</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Cache Hit Rate</span>
+                                        <span class="metric-value" id="live-cache">--</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Response Time</span>
+                                        <span class="metric-value" id="live-response">--</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Operations Chart -->
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>Database Operations</h3>
+                                    <div class="chart-legend">
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #4CAF50;"></span>
+                                            Operations/sec
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="operations-chart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Memory Usage Chart -->
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>Memory Usage Trend</h3>
+                                    <div class="chart-legend">
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #2196F3;"></span>
+                                            Memory %
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="memory-chart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Cache Performance Chart -->
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>Cache Performance</h3>
+                                    <div class="chart-legend">
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #FF9800;"></span>
+                                            Hit Rate %
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="cache-chart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Multi-metric Dashboard -->
+                            <div class="chart-card wide">
+                                <div class="card-header">
+                                    <h3>Performance Overview</h3>
+                                    <div class="chart-legend">
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #4CAF50;"></span>
+                                            Operations
+                                        </span>
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #2196F3;"></span>
+                                            Memory
+                                        </span>
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #FF9800;"></span>
+                                            CPU
+                                        </span>
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #E91E63;"></span>
+                                            Response Time
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="overview-chart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Operation Types Distribution -->
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>Operation Types</h3>
+                                    <div class="chart-legend">
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #4CAF50;"></span>
+                                            Reads
+                                        </span>
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #2196F3;"></span>
+                                            Writes
+                                        </span>
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #FF9800;"></span>
+                                            Updates
+                                        </span>
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #E91E63;"></span>
+                                            Deletes
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="operations-donut-chart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Connection Status -->
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>Active Connections</h3>
+                                    <div class="chart-legend">
+                                        <span class="legend-item">
+                                            <span class="legend-color" style="background: #9C27B0;"></span>
+                                            Connections
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="connections-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Alerts -->
+                        <div class="alerts-section">
+                            <h3>Performance Alerts</h3>
+                            <div class="alerts-container" id="performance-alerts">
+                                <!-- Alerts will be dynamically inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Monitor Tab -->
+                <div id="health-monitor" class="tab-pane">
+                    <!-- Health monitor content will be inserted here -->
+                </div>
+
+                <!-- Backup Manager Tab -->
+                <div id="backup-manager" class="tab-pane">
+                    <!-- Backup manager content will be inserted here -->
+                </div>
+
+                <!-- Security Tab -->
+                <div id="security" class="tab-pane">
+                    <div class="security-dashboard">
+                        <div class="security-header">
+                            <div class="header-content">
+                                <h2 class="security-title">
+                                    <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                    </svg>
+                                    Security Settings
+                                </h2>
+                                <p class="security-subtitle">Manage authentication, encryption, and access control</p>
+                            </div>
+                        </div>
+
+                        <div class="security-grid">
+                            <div class="security-card">
+                                <div class="card-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="8.5" cy="7" r="4"/>
+                                        <path d="M20 8v6M23 11l-3 3-3-3"/>
+                                    </svg>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Access Control</h3>
+                                    <p>Manage user permissions and authentication settings</p>
+                                    <div class="card-stats">
+                                        <span class="stat-item">
+                                            <span class="stat-value">3</span>
+                                            <span class="stat-label">Active Users</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <span class="stat-value">Admin</span>
+                                            <span class="stat-label">Your Role</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn btn-primary">
+                                        <svg viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                        </svg>
+                                        Configure Access
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="security-card">
+                                <div class="card-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                                    </svg>
+                                </div>
+                                <div class="card-content">
+                                    <h3>API Keys</h3>
+                                    <p>Generate and manage API keys for external access</p>
+                                    <div class="card-stats">
+                                        <span class="stat-item">
+                                            <span class="stat-value">2</span>
+                                            <span class="stat-label">Active Keys</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <span class="stat-value">30d</span>
+                                            <span class="stat-label">Expires In</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn btn-secondary">
+                                        <svg viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Manage Keys
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="security-card">
+                                <div class="card-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        <path d="M12 1a3 3 0 003 3 3 3 0 003 3 3 3 0 00-3 3 3 3 0 00-3 3 3 3 0 00-3-3 3 3 0 00-3-3 3 3 0 003-3 3 3 0 003-3z"/>
+                                    </svg>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Encryption</h3>
+                                    <p>Configure data encryption and security protocols</p>
+                                    <div class="card-stats">
+                                        <span class="stat-item">
+                                            <span class="stat-value">AES-256</span>
+                                            <span class="stat-label">Algorithm</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <span class="stat-value status-enabled">Enabled</span>
+                                            <span class="stat-label">Status</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn btn-outline">
+                                        <svg viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Security Settings
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="security-card">
+                                <div class="card-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Two-Factor Authentication</h3>
+                                    <p>Add an extra layer of security to your account</p>
+                                    <div class="card-stats">
+                                        <span class="stat-item">
+                                            <span class="stat-value status-disabled">Disabled</span>
+                                            <span class="stat-label">Status</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <span class="stat-value">TOTP</span>
+                                            <span class="stat-label">Method</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn btn-warning">
+                                        <svg viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Enable 2FA
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="security-card">
+                                <div class="card-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h2M15 5h2a2 2 0 012 2v10a2 2 0 01-2 2h-2m-6-4h6m-6-4h6m-6-4h6"/>
+                                    </svg>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Audit Logs</h3>
+                                    <p>Monitor and review security-related activities</p>
+                                    <div class="card-stats">
+                                        <span class="stat-item">
+                                            <span class="stat-value">1,247</span>
+                                            <span class="stat-label">Total Events</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <span class="stat-value">Today</span>
+                                            <span class="stat-label">Last Activity</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn btn-info">
+                                        <svg viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                        View Logs
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="security-card">
+                                <div class="card-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <div class="card-content">
+                                    <h3>Session Management</h3>
+                                    <p>Control active sessions and timeout settings</p>
+                                    <div class="card-stats">
+                                        <span class="stat-item">
+                                            <span class="stat-value">2</span>
+                                            <span class="stat-label">Active Sessions</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <span class="stat-value">30min</span>
+                                            <span class="stat-label">Timeout</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn btn-danger">
+                                        <svg viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Manage Sessions
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings" class="tab-pane">
+                    <div class="settings-dashboard">
+                        <!-- System Status Widget -->
+                        <div class="system-status-widget">
+                            <div class="status-header">
+                                <h3>
+                                    <svg class="status-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                        <line x1="8" y1="21" x2="16" y2="21"/>
+                                        <line x1="12" y1="17" x2="12" y2="21"/>
+                                    </svg>
+                                    System Status
+                                </h3>
+                                <div class="status-indicators">
+                                    <div class="status-indicator">
+                                        <svg class="status-icon" id="status-icon" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span class="status-text" id="status-text">Initializing...</span>
+                                        <span class="status-time" id="status-time"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="status-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Memory Usage</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" id="memory-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <span class="metric-value" id="memory-value" data-stat="memory">0%</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Database</span>
+                                    <div class="metric-status">
+                                        <span class="status-badge" id="db-status" data-stat="database-status">DISCONNECTED</span>
+                                        <span class="metric-value" id="db-collections" data-stat="collections">0 collections</span>
+                                    </div>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Uptime</span>
+                                    <div class="metric-status">
+                                        <span class="metric-value" id="uptime-value" data-stat="uptime">00:00:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-header">
+                            <h2>System Configuration</h2>
+                            <div class="settings-actions">
+                                <button class="btn btn-secondary" id="export-config">📤 Export Config</button>
+                                <button class="btn btn-warning" id="reset-settings">🔄 Reset All</button>
+                                <button class="btn btn-success" id="save-settings">💾 Save Changes</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-grid">
+                            <!-- Database Configuration -->
+                            <div class="settings-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                                        </svg>
+                                        Database Configuration
+                                    </h3>
+                                    <span class="config-status active">Online</span>
+                                </div>
+                                <div class="settings-content">
+                                    <div class="setting-group">
+                                        <label for="db-name">Database Name</label>
+                                        <input type="text" id="db-name" value="BigBaseAlpha" class="form-input">
+                                        <small class="setting-description">The display name for your database instance</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="db-path">Data Directory</label>
+                                        <div class="input-group">
+                                            <input type="text" id="db-path" value="./bigbase_data" class="form-input" readonly>
+                                            <button class="btn btn-outline btn-sm">
+                                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+                                                </svg>
+                                                Browse
+                                            </button>
+                                        </div>
+                                        <small class="setting-description">Location where database files are stored</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="db-format">Storage Format</label>
+                                        <select id="db-format" class="form-select">
+                                            <option value="json" selected>JSON</option>
+                                            <option value="bson">BSON</option>
+                                            <option value="msgpack">MessagePack</option>
+                                        </select>
+                                        <small class="setting-description">File format for data serialization</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="auto-sync" checked>
+                                            <span class="checkmark"></span>
+                                            Enable Auto-Sync
+                                        </label>
+                                        <small class="setting-description">Automatically sync changes to disk</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Performance Settings -->
+                            <div class="settings-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                        </svg>
+                                        Performance Settings
+                                    </h3>
+                                    <span class="performance-indicator">Optimized</span>
+                                </div>
+                                <div class="settings-content">
+                                    <div class="setting-group">
+                                        <label for="cache-size">Cache Size (MB)</label>
+                                        <div class="slider-group">
+                                            <input type="range" id="cache-size" min="16" max="512" value="128" class="slider">
+                                            <span class="slider-value">128 MB</span>
+                                        </div>
+                                        <small class="setting-description">Memory allocated for caching frequently accessed data</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="max-connections">Max Concurrent Connections</label>
+                                        <div class="slider-group">
+                                            <input type="range" id="max-connections" min="10" max="1000" value="100" class="slider">
+                                            <span class="slider-value">100</span>
+                                        </div>
+                                        <small class="setting-description">Maximum number of simultaneous database connections</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="query-timeout">Query Timeout (seconds)</label>
+                                        <input type="number" id="query-timeout" value="30" min="1" max="300" class="form-input">
+                                        <small class="setting-description">Maximum time to wait for query completion</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="enable-indexing" checked>
+                                            <span class="checkmark"></span>
+                                            Enable Automatic Indexing
+                                        </label>
+                                        <small class="setting-description">Automatically create indexes for frequently queried fields</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="enable-compression" checked>
+                                            <span class="checkmark"></span>
+                                            Enable Data Compression
+                                        </label>
+                                        <small class="setting-description">Compress data to save disk space</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Settings -->
+                            <div class="settings-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                        </svg>
+                                        Security Settings
+                                    </h3>
+                                    <span class="security-level warning">Medium</span>
+                                </div>
+                                <div class="settings-content">
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="enable-encryption">
+                                            <span class="checkmark"></span>
+                                            Enable Data Encryption
+                                        </label>
+                                        <small class="setting-description">Encrypt data at rest using AES-256</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="encryption-key">Encryption Key</label>
+                                        <div class="input-group">
+                                            <input type="password" id="encryption-key" placeholder="Enter encryption key" class="form-input">
+                                            <button class="btn btn-outline btn-sm" id="generate-key">🔑 Generate</button>
+                                        </div>
+                                        <small class="setting-description">32-character encryption key for data protection</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="enable-audit" checked>
+                                            <span class="checkmark"></span>
+                                            Enable Audit Logging
+                                        </label>
+                                        <small class="setting-description">Log all database operations for security monitoring</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="session-timeout">Session Timeout (minutes)</label>
+                                        <input type="number" id="session-timeout" value="30" min="5" max="480" class="form-input">
+                                        <small class="setting-description">Automatic logout after inactivity</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="enable-2fa">
+                                            <span class="checkmark"></span>
+                                            Enable Two-Factor Authentication
+                                        </label>
+                                        <small class="setting-description">Require 2FA for enhanced security</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Backup & Recovery -->
+                            <div class="settings-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14,2 14,8 20,8"/>
+                                            <line x1="16" y1="13" x2="8" y2="13"/>
+                                            <line x1="16" y1="17" x2="8" y2="17"/>
+                                            <polyline points="10,9 9,9 8,9"/>
+                                        </svg>
+                                        Backup & Recovery
+                                    </h3>
+                                    <span class="backup-status">Last: 2 hours ago</span>
+                                </div>
+                                <div class="settings-content">
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="auto-backup" checked>
+                                            <span class="checkmark"></span>
+                                            Enable Auto Backup
+                                        </label>
+                                        <small class="setting-description">Automatically create database backups</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="backup-interval">Backup Interval</label>
+                                        <select id="backup-interval" class="form-select">
+                                            <option value="hourly">Every Hour</option>
+                                            <option value="daily" selected>Daily</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                        </select>
+                                        <small class="setting-description">How often to create automatic backups</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="backup-retention">Backup Retention (days)</label>
+                                        <input type="number" id="backup-retention" value="30" min="1" max="365" class="form-input">
+                                        <small class="setting-description">How long to keep backup files</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="backup-location">Backup Location</label>
+                                        <div class="input-group">
+                                            <input type="text" id="backup-location" value="./backups" class="form-input">
+                                            <button class="btn btn-outline btn-sm">📂 Browse</button>
+                                        </div>
+                                        <small class="setting-description">Directory for storing backup files</small>
+                                    </div>
+
+                                    <div class="backup-actions">
+                                        <button class="btn btn-primary btn-sm">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
+                                                <path fill-rule="evenodd" d="M3 8a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Create Backup Now
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm">
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                                            </svg>
+                                            View Backup History
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Monitoring & Alerts -->
+                            <div class="settings-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"/>
+                                            <path d="M19 19v-6a2 2 0 00-2-2h-2a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"/>
+                                            <path d="M5 7a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V7z"/>
+                                        </svg>
+                                        Monitoring & Alerts
+                                    </h3>
+                                    <span class="monitoring-status active">Active</span>
+                                </div>
+                                <div class="settings-content">
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="enable-monitoring" checked>
+                                            <span class="checkmark"></span>
+                                            Enable Performance Monitoring
+                                        </label>
+                                        <small class="setting-description">Track database performance metrics</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="alert-email">Alert Email</label>
+                                        <input type="email" id="alert-email" placeholder="admin@example.com" class="form-input">
+                                        <small class="setting-description">Email address for system alerts</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="memory-threshold">Memory Alert Threshold (%)</label>
+                                        <div class="slider-group">
+                                            <input type="range" id="memory-threshold" min="50" max="95" value="80" class="slider">
+                                            <span class="slider-value">80%</span>
+                                        </div>
+                                        <small class="setting-description">Send alert when memory usage exceeds this threshold</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="disk-threshold">Disk Space Alert Threshold (%)</label>
+                                        <div class="slider-group">
+                                            <input type="range" id="disk-threshold" min="70" max="95" value="85" class="slider">
+                                            <span class="slider-value">85%</span>
+                                        </div>
+                                        <small class="setting-description">Send alert when disk usage exceeds this threshold</small>
+                                    </div>
+
+                                    <div class="alert-types">
+                                        <h5>Alert Types</h5>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="alert-performance" checked>
+                                            <span class="checkmark"></span>
+                                            Performance Alerts
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="alert-security" checked>
+                                            <span class="checkmark"></span>
+                                            Security Alerts
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="alert-backup" checked>
+                                            <span class="checkmark"></span>
+                                            Backup Alerts
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="alert-errors">
+                                            <span class="checkmark"></span>
+                                            Error Alerts
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Theme & UI -->
+                            <div class="settings-card">
+                                <div class="card-header">
+                                    <h3>
+                                        <svg class="card-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/>
+                                        </svg>
+                                        Theme & Interface
+                                    </h3>
+                                    <span class="theme-indicator">Dark Mode</span>
+                                </div>
+                                <div class="settings-content">
+                                    <div class="setting-group">
+                                        <label for="theme-select">Color Theme</label>
+                                        <select id="theme-select" class="form-select">
+                                            <option value="dark" selected>Dark Theme</option>
+                                            <option value="light">Light Theme</option>
+                                            <option value="auto">Auto (System)</option>
+                                            <option value="cyberpunk">Cyberpunk</option>
+                                            <option value="ocean">Ocean Blue</option>
+                                        </select>
+                                        <small class="setting-description">Choose your preferred color scheme</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="language-select">Language</label>
+                                        <select id="language-select" class="form-select">
+                                            <option value="tr" selected>Türkçe</option>
+                                            <option value="en">English</option>
+                                            <option value="fr">Français</option>
+                                            <option value="de">Deutsch</option>
+                                            <option value="es">Español</option>
+                                        </select>
+                                        <small class="setting-description">Interface language</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="animations" checked>
+                                            <span class="checkmark"></span>
+                                            Enable Animations
+                                        </label>
+                                        <small class="setting-description">Smooth transitions and effects</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="sound-effects">
+                                            <span class="checkmark"></span>
+                                            Enable Sound Effects
+                                        </label>
+                                        <small class="setting-description">Audio feedback for interactions</small>
+                                    </div>
+
+                                    <div class="setting-group">
+                                        <label for="refresh-rate">Dashboard Refresh Rate (seconds)</label>
+                                        <select id="refresh-rate" class="form-select">
+                                            <option value="1">1 Second</option>
+                                            <option value="2" selected>2 Seconds</option>
+                                            <option value="5">5 Seconds</option>
+                                            <option value="10">10 Seconds</option>
+                                            <option value="30">30 Seconds</option>
+                                        </select>
+                                        <small class="setting-description">How often to update real-time data</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Configuration -->
+                        <div class="advanced-config">
+                            <div class="config-header">
+                                <h3>
+                                    <svg class="config-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+                                    </svg>
+                                    Advanced Configuration
+                                </h3>
+                                <button class="btn btn-outline" id="toggle-advanced">Show Advanced</button>
+                            </div>
+                            <div class="advanced-content" id="advanced-content" style="display: none;">
+                                <div class="config-editor">
+                                    <h4>Raw Configuration (JSON)</h4>
+                                    <textarea id="config-json" class="config-textarea" rows="15">{
+  "database": {
+    "name": "BigBaseAlpha",
+    "path": "./bigbase_data",
+    "format": "json",
+    "autoSync": true
+  },
+  "performance": {
+    "cacheSize": 128,
+    "maxConnections": 100,
+    "queryTimeout": 30,
+    "enableIndexing": true,
+    "enableCompression": true
+  },
+  "security": {
+    "encryption": false,
+    "auditLogging": true,
+    "sessionTimeout": 30,
+    "twoFactorAuth": false
+  },
+  "backup": {
+    "autoBackup": true,
+    "interval": "daily",
+    "retention": 30,
+    "location": "./backups"
+  },
+  "monitoring": {
+    "enabled": true,
+    "memoryThreshold": 80,
+    "diskThreshold": 85,
+    "alertEmail": ""
+  },
+  "ui": {
+    "theme": "dark",
+    "language": "tr",
+    "animations": true,
+    "soundEffects": false,
+    "refreshRate": 2
+  }
+}</textarea>
+                                    <div class="config-actions">
+                                        <button class="btn btn-secondary">🔄 Reset</button>
+                                        <button class="btn btn-warning">✅ Validate</button>
+                                        <button class="btn btn-primary">💾 Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Save Actions -->
+                        <div class="settings-footer">
+                            <div class="save-status" id="save-status">
+                                <span class="status-icon">✅</span>
+                                <span class="status-text">All changes saved</span>
+                                <span class="status-time">Last saved: 2 minutes ago</span>
+                            </div>
+                            <div class="settings-actions">
+                                <button class="btn btn-secondary" id="discard-changes">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Discard Changes
+                                </button>
+                                <button class="btn btn-warning" id="reset-to-defaults">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Reset to Defaults
+                                </button>
+                                <button class="btn btn-success" id="save-all-settings">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/>
+                                    </svg>
+                                    Save All Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/notifications.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/query-builder.js"></script>
+    <script src="js/health-monitor.js"></script>
+    <script src="js/backup-manager.js"></script>
+    <script src="js/realtime-charts.js"></script>
+    <script src="js/enhanced-settings.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

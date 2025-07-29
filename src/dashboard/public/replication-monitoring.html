@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigBaseAlpha - Replication & Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 1.5rem;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status.healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.critical {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.connected {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn.secondary {
+            background: #6c757d;
+        }
+
+        .btn.secondary:hover {
+            background: #5a6268;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .node-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .node-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .node-item:last-child {
+            border-bottom: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #28a745;
+            transition: width 0.3s ease;
+        }
+
+        .alert-item {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .alert-item.critical {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 BigBaseAlpha Enterprise Dashboard</h1>
+            <p>Advanced Data Replication & Monitoring System</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- System Status Card -->
+            <div class="card">
+                <h3><span class="icon">🏥</span>System Health</h3>
+                <div id="system-status" class="loading">Loading system status...</div>
+            </div>
+
+            <!-- Replication Status Card -->
+            <div class="card">
+                <h3><span class="icon">🔄</span>Replication Status</h3>
+                <div id="replication-status" class="loading">Loading replication status...</div>
+            </div>
+
+            <!-- Performance Metrics Card -->
+            <div class="card">
+                <h3><span class="icon">⚡</span>Performance Metrics</h3>
+                <div id="performance-metrics" class="loading">Loading performance metrics...</div>
+            </div>
+
+            <!-- Active Alerts Card -->
+            <div class="card">
+                <h3><span class="icon">🚨</span>Active Alerts</h3>
+                <div id="active-alerts" class="loading">Loading alerts...</div>
+            </div>
+
+            <!-- Replication Nodes Card -->
+            <div class="card full-width">
+                <h3><span class="icon">🌐</span>Replication Nodes</h3>
+                <div id="replication-nodes" class="loading">Loading replication nodes...</div>
+                <div style="margin-top: 15px;">
+                    <button class="btn" onclick="forceSync()">Force Sync</button>
+                    <button class="btn secondary" onclick="refreshNodes()">Refresh Nodes</button>
+                </div>
+            </div>
+
+            <!-- System Metrics Card -->
+            <div class="card full-width">
+                <h3><span class="icon">📊</span>System Metrics</h3>
+                <div id="system-metrics" class="loading">Loading system metrics...</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; color: white; margin-top: 30px;">
+            <button class="btn" onclick="refreshAll()">🔄 Refresh All Data</button>
+            <button class="btn secondary" onclick="exportMetrics()">📤 Export Metrics</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Load data on page load
+        window.addEventListener('load', () => {
+            loadSystemStatus();
+            loadReplicationStatus();
+            loadPerformanceMetrics();
+            loadActiveAlerts();
+            loadReplicationNodes();
+            loadSystemMetrics();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(refreshAll, 30000);
+        });
+
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching ${endpoint}:`, error);
+                return null;
+            }
+        }
+
+        async function loadSystemStatus() {
+            const data = await fetchData('/monitoring/status');
+            const container = document.getElementById('system-status');
+            
+            if (!data) {
+                container.innerHTML = '<div class="error">Failed to load system status</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="metric">
+                    <span>Overall Status</span>
+                    <span class="status ${data.status}">${data.status.toUpperCase()}</span>
+                </div>
+                <div class="metric">
+                    <span>Uptime</span>
+                    <span class="metric-value">${formatUptime(data.uptime)}</span>
+                </div>
+                <div class="metric">
+                    <span>Active Alerts</span>
+                    <span class="metric-value">${data.activeAlerts}</span>
+                </div>
+                <div class="metric">
+                    <span>Health Checks</span>
+                    <span class="metric-value">${data.healthChecks}</span>
+                </div>
+            `;
+        }
+
+        async function loadReplicationStatus() {
+            const data = await fetchData('/replication/status');
+            const container = document.getElementById('replication-status');
+            
+            if (!data) {
+                container.innerHTML = '<div class="error">Failed to load replication status</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="metric">
+                    <span>Status</span>
+                    <span class="status ${data.enabled ? 'connected' : 'critical'}">${data.enabled ? 'ENABLED' : 'DISABLED'}</span>
+                </div>
+                <div class="metric">
+                    <span>Role</span>
+                    <span class="metric-value">${data.role.toUpperCase()}</span>
+                </div>
+                <div class="metric">
+                    <span>Connected Nodes</span>
+                    <span class="metric-value">${data.nodes.length}</span>
+                </div>
+                <div class="metric">
+                    <span>Operations Replicated</span>
+                    <span class="metric-value">${data.metrics.operationsReplicated.toLocaleString()}</span>
+                </div>
+                <div class="metric">
+                    <span>Queue Size</span>
+                    <span class="metric-value">${data.state.operationsQueue}</span>
+                </div>
+            `;
+        }
+
+        async function loadPerformanceMetrics() {
+            const data = await fetchData('/monitoring/metrics');
+            const container = document.getElementById('performance-metrics');
+            
+            if (!data) {
+                container.innerHTML = '<div class="error">Failed to load performance metrics</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="metric">
+                    <span>Avg Response Time</span>
+                    <span class="metric-value">${data.performance.avgResponseTime.toFixed(1)}ms</span>
+                </div>
+                <div class="metric">
+                    <span>Throughput</span>
+                    <span class="metric-value">${data.performance.throughput.toFixed(1)} req/s</span>
+                </div>
+                <div class="metric">
+                    <span>CPU Usage</span>
+                    <span class="metric-value">${data.system.cpu.usage.toFixed(1)}%</span>
+                </div>
+                <div class="metric">
+                    <span>Memory Usage</span>
+                    <span class="metric-value">${data.system.memory.percentage.toFixed(1)}%</span>
+                </div>
+                <div class="metric">
+                    <span>Error Rate</span>
+                    <span class="metric-value">${data.database.errorRate}%</span>
+                </div>
+            `;
+        }
+
+        async function loadActiveAlerts() {
+            const data = await fetchData('/monitoring/alerts');
+            const container = document.getElementById('active-alerts');
+            
+            if (!data) {
+                container.innerHTML = '<div class="error">Failed to load alerts</div>';
+                return;
+            }
+
+            const activeAlerts = data.filter(alert => !alert.resolved);
+            
+            if (activeAlerts.length === 0) {
+                container.innerHTML = '<div style="color: #28a745; text-align: center;">✅ No Active Alerts</div>';
+                return;
+            }
+
+            container.innerHTML = activeAlerts.map(alert => `
+                <div class="alert-item ${alert.severity}">
+                    <strong>${alert.type.replace('_', ' ').toUpperCase()}</strong><br>
+                    <small>${alert.message}</small><br>
+                    <small style="opacity: 0.7;">${new Date(alert.timestamp).toLocaleString()}</small>
+                </div>
+            `).join('');
+        }
+
+        async function loadReplicationNodes() {
+            const data = await fetchData('/replication/nodes');
+            const container = document.getElementById('replication-nodes');
+            
+            if (!data) {
+                container.innerHTML = '<div class="error">Failed to load replication nodes</div>';
+                return;
+            }
+
+            if (data.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666;">No replication nodes configured</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="node-list">
+                    ${data.map(node => `
+                        <div class="node-item">
+                            <div>
+                                <strong>${node.id}</strong> (${node.host}:${node.port})<br>
+                                <small>Role: ${node.role} | Lag: ${node.lag}ms</small>
+                            </div>
+                            <span class="status ${node.status}">${node.status.toUpperCase()}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function loadSystemMetrics() {
+            const data = await fetchData('/monitoring/metrics');
+            const container = document.getElementById('system-metrics');
+            
+            if (!data) {
+                container.innerHTML = '<div class="error">Failed to load system metrics</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div>
+                        <h4>Database</h4>
+                        <div class="metric">
+                            <span>Collections</span>
+                            <span class="metric-value">${data.database.collections}</span>
+                        </div>
+                        <div class="metric">
+                            <span>Operations</span>
+                            <span class="metric-value">${data.database.operations.toLocaleString()}</span>
+                        </div>
+                        <div class="metric">
+                            <span>Cache Hit Rate</span>
+                            <span class="metric-value">${data.database.cacheHitRate.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>System Resources</h4>
+                        <div class="metric">
+                            <span>CPU Cores</span>
+                            <span class="metric-value">${data.system.cpu.cores}</span>
+                        </div>
+                        <div class="metric">
+                            <span>Total Memory</span>
+                            <span class="metric-value">${formatBytes(data.system.memory.total)}</span>
+                        </div>
+                        <div class="metric">
+                            <span>Free Memory</span>
+                            <span class="metric-value">${formatBytes(data.system.memory.free)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function forceSync() {
+            try {
+                const response = await fetch(`${API_BASE}/replication/sync`, { method: 'POST' });
+                const result = await response.json();
+                alert(result.message || 'Sync initiated');
+                loadReplicationStatus();
+            } catch (error) {
+                alert('Failed to initiate sync');
+            }
+        }
+
+        function refreshNodes() {
+            loadReplicationNodes();
+        }
+
+        function refreshAll() {
+            loadSystemStatus();
+            loadReplicationStatus();
+            loadPerformanceMetrics();
+            loadActiveAlerts();
+            loadReplicationNodes();
+            loadSystemMetrics();
+        }
+
+        async function exportMetrics() {
+            try {
+                const response = await fetch(`${API_BASE}/monitoring/export`);
+                const data = await response.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bigbase-metrics-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Failed to export metrics');
+            }
+        }
+
+        function formatUptime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return `${days}d ${hours % 24}h`;
+            if (hours > 0) return `${hours}h ${minutes % 60}m`;
+            if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+            return `${seconds}s`;
+        }
+
+        function formatBytes(bytes) {
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            if (bytes === 0) return '0 B';
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

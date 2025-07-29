@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigBaseAlpha - Distributed Computing Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-header p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .system-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4facfe;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-sublabel {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            opacity: 0.8;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        .worker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .worker-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .worker-card.active {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+        }
+
+        .worker-card.busy {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .worker-card.error {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+        }
+
+        .worker-id {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .worker-status {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .worker-jobs {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .job-queue {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .job-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4facfe;
+            transition: all 0.3s ease;
+        }
+
+        .job-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .job-item.running {
+            border-left-color: #fbbf24;
+            background: #fefce8;
+        }
+
+        .job-item.completed {
+            border-left-color: #4ade80;
+            background: #f0fdf4;
+        }
+
+        .job-item.failed {
+            border-left-color: #f87171;
+            background: #fef2f2;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .job-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .job-status {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-weight: 500;
+        }
+
+        .job-status.pending {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .job-status.running {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .job-status.completed {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .job-status.failed {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .job-details {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .job-timing {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4facfe;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background-color: #fef2f2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .success {
+            background-color: #f0fdf4;
+            color: #16a34a;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected { background-color: #4ade80; }
+        .status-warning { background-color: #fbbf24; }
+        .status-error { background-color: #f87171; }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .system-stats {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .worker-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>⚡ Distributed Computing Dashboard</h1>
+            <p>Real-time monitoring and control of parallel processing systems</p>
+            <div id="connectionStatus" class="status-indicator status-connected"></div>
+            <span>System Status: <span id="statusText">Connected</span></span>
+            
+            <div class="control-panel">
+                <button class="control-btn" onclick="startAllWorkers()">🚀 Start All Workers</button>
+                <button class="control-btn" onclick="stopAllWorkers()">⏹️ Stop All Workers</button>
+                <button class="control-btn" onclick="runTestJob()">🧪 Run Test Job</button>
+                <button class="control-btn" onclick="clearCompletedJobs()">🧹 Clear Completed</button>
+                <button class="control-btn" onclick="optimizeSystem()">⚙️ Optimize System</button>
+            </div>
+        </div>
+
+        <div class="system-stats" id="systemStats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalWorkers">-</div>
+                <div class="stat-label">Total Workers</div>
+                <div class="stat-sublabel" id="activeWorkers">- active</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="queuedJobs">-</div>
+                <div class="stat-label">Queued Jobs</div>
+                <div class="stat-sublabel" id="runningJobs">- running</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedJobs">-</div>
+                <div class="stat-label">Completed</div>
+                <div class="stat-sublabel" id="failedJobs">- failed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgExecutionTime">-</div>
+                <div class="stat-label">Avg Exec Time</div>
+                <div class="stat-sublabel">milliseconds</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="throughput">-</div>
+                <div class="stat-label">Throughput</div>
+                <div class="stat-sublabel">jobs/minute</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="systemLoad">-</div>
+                <div class="stat-label">System Load</div>
+                <div class="stat-sublabel">percentage</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Worker Pool Status -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">👥 Worker Pool Status</div>
+                        <div class="card-subtitle">Real-time worker monitoring</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadWorkerStatus()">Refresh</button>
+                </div>
+                <div class="worker-grid" id="workerGrid">
+                    <div class="loading">Loading worker status...</div>
+                </div>
+            </div>
+
+            <!-- Performance Chart -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">📊 Performance Metrics</div>
+                        <div class="card-subtitle">System performance over time</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadPerformanceChart()">Refresh</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Job Queue -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">📋 Job Queue</div>
+                        <div class="card-subtitle">Active and pending jobs</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadJobQueue()">Refresh</button>
+                </div>
+                <div class="job-queue" id="jobQueue">
+                    <div class="loading">Loading job queue...</div>
+                </div>
+            </div>
+
+            <!-- Resource Utilization -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">🖥️ Resource Utilization</div>
+                        <div class="card-subtitle">CPU, Memory, and Network usage</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadResourceChart()">Refresh</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="resourceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Load Balancing -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">⚖️ Load Distribution</div>
+                        <div class="card-subtitle">Job distribution across workers</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadLoadChart()">Refresh</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="loadChart"></canvas>
+                </div>
+            </div>
+
+            <!-- System Analytics -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">📈 System Analytics</div>
+                        <div class="card-subtitle">Performance insights and recommendations</div>
+                    </div>
+                    <button class="refresh-btn" onclick="loadSystemAnalytics()">Refresh</button>
+                </div>
+                <div class="performance-metrics" id="performanceMetrics">
+                    <div class="loading">Loading system analytics...</div>
+                </div>
+                <div id="systemRecommendations">
+                    <div class="loading">Generating recommendations...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:3001/api';
+        let performanceChart = null;
+        let resourceChart = null;
+        let loadChart = null;
+        let refreshInterval = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            startAutoRefresh();
+        });
+
+        async function initializeDashboard() {
+            try {
+                await Promise.all([
+                    loadSystemStats(),
+                    loadWorkerStatus(),
+                    loadPerformanceChart(),
+                    loadJobQueue(),
+                    loadResourceChart(),
+                    loadLoadChart(),
+                    loadSystemAnalytics()
+                ]);
+                updateConnectionStatus(true);
+            } catch (error) {
+                console.error('Dashboard initialization failed:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function startAutoRefresh() {
+            refreshInterval = setInterval(async () => {
+                try {
+                    await Promise.all([
+                        loadSystemStats(),
+                        loadWorkerStatus(),
+                        loadJobQueue()
+                    ]);
+                } catch (error) {
+                    console.error('Auto-refresh failed:', error);
+                }
+            }, 5000); // Refresh every 5 seconds
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusIndicator = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (connected) {
+                statusIndicator.className = 'status-indicator status-connected';
+                statusText.textContent = 'Connected';
+            } else {
+                statusIndicator.className = 'status-indicator status-error';
+                statusText.textContent = 'Disconnected';
+            }
+        }
+
+        async function loadSystemStats() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/status`);
+                const data = await response.json();
+
+                document.getElementById('totalWorkers').textContent = data.totalWorkers || 0;
+                document.getElementById('activeWorkers').textContent = `${data.activeWorkers || 0} active`;
+                document.getElementById('queuedJobs').textContent = data.queuedJobs || 0;
+                document.getElementById('runningJobs').textContent = `${data.runningJobs || 0} running`;
+                document.getElementById('completedJobs').textContent = data.completedJobs || 0;
+                document.getElementById('failedJobs').textContent = `${data.failedJobs || 0} failed`;
+                document.getElementById('avgExecutionTime').textContent = 
+                    data.avgExecutionTime ? `${data.avgExecutionTime.toFixed(1)}ms` : '-';
+                document.getElementById('throughput').textContent = 
+                    data.throughput ? data.throughput.toFixed(1) : '-';
+                document.getElementById('systemLoad').textContent = 
+                    data.systemLoad ? `${data.systemLoad.toFixed(1)}%` : '-';
+            } catch (error) {
+                console.error('Failed to load system stats:', error);
+            }
+        }
+
+        async function loadWorkerStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/workers`);
+                const workers = await response.json();
+
+                const workerGrid = document.getElementById('workerGrid');
+                workerGrid.innerHTML = '';
+
+                if (workers.length === 0) {
+                    workerGrid.innerHTML = '<div class="loading">No workers available</div>';
+                    return;
+                }
+
+                workers.forEach(worker => {
+                    const workerCard = document.createElement('div');
+                    workerCard.className = `worker-card ${worker.status}`;
+                    
+                    const workload = worker.currentJobs || 0;
+                    const maxJobs = worker.maxJobs || 10;
+                    const workloadPercent = (workload / maxJobs) * 100;
+                    
+                    workerCard.innerHTML = `
+                        <div class="worker-id">Worker ${worker.id}</div>
+                        <div class="worker-status">Status: ${worker.status}</div>
+                        <div class="worker-jobs">${workload}/${maxJobs} jobs</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${workloadPercent}%"></div>
+                        </div>
+                    `;
+                    
+                    workerGrid.appendChild(workerCard);
+                });
+            } catch (error) {
+                console.error('Failed to load worker status:', error);
+                document.getElementById('workerGrid').innerHTML = 
+                    '<div class="error">Failed to load worker status</div>';
+            }
+        }
+
+        async function loadPerformanceChart() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/performance-history`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('performanceChart').getContext('2d');
+                
+                if (performanceChart) {
+                    performanceChart.destroy();
+                }
+
+                performanceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.timestamps.map(ts => new Date(ts).toLocaleTimeString()),
+                        datasets: [
+                            {
+                                label: 'Jobs/Minute',
+                                data: data.throughput,
+                                borderColor: '#4facfe',
+                                backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Avg Response Time (ms)',
+                                data: data.responseTime,
+                                borderColor: '#00f2fe',
+                                backgroundColor: 'rgba(0, 242, 254, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                beginAtZero: true
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                beginAtZero: true,
+                                grid: {
+                                    drawOnChartArea: false,
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to load performance chart:', error);
+            }
+        }
+
+        async function loadJobQueue() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/jobs`);
+                const jobs = await response.json();
+
+                const jobQueue = document.getElementById('jobQueue');
+                jobQueue.innerHTML = '';
+
+                if (jobs.length === 0) {
+                    jobQueue.innerHTML = '<div class="loading">No jobs in queue</div>';
+                    return;
+                }
+
+                jobs.forEach(job => {
+                    const jobItem = document.createElement('div');
+                    jobItem.className = `job-item ${job.status}`;
+                    
+                    const duration = job.endTime ? 
+                        `${job.endTime - job.startTime}ms` : 
+                        job.startTime ? `${Date.now() - job.startTime}ms` : '-';
+                    
+                    jobItem.innerHTML = `
+                        <div class="job-header">
+                            <div class="job-title">${job.type} - ${job.id}</div>
+                            <div class="job-status ${job.status}">${job.status}</div>
+                        </div>
+                        <div class="job-details">Worker: ${job.workerId || 'Unassigned'}</div>
+                        <div class="job-timing">
+                            Duration: ${duration} | 
+                            Created: ${new Date(job.createdAt).toLocaleTimeString()}
+                        </div>
+                    `;
+                    
+                    jobQueue.appendChild(jobItem);
+                });
+            } catch (error) {
+                console.error('Failed to load job queue:', error);
+                document.getElementById('jobQueue').innerHTML = 
+                    '<div class="error">Failed to load job queue</div>';
+            }
+        }
+
+        async function loadResourceChart() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/resource-usage`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('resourceChart').getContext('2d');
+                
+                if (resourceChart) {
+                    resourceChart.destroy();
+                }
+
+                resourceChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['CPU Usage', 'Memory Usage', 'Available'],
+                        datasets: [{
+                            data: [data.cpuUsage, data.memoryUsage, 100 - data.cpuUsage - data.memoryUsage],
+                            backgroundColor: ['#4facfe', '#00f2fe', '#e5e7eb'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to load resource chart:', error);
+            }
+        }
+
+        async function loadLoadChart() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/load-distribution`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('loadChart').getContext('2d');
+                
+                if (loadChart) {
+                    loadChart.destroy();
+                }
+
+                loadChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.workers.map(w => `Worker ${w.id}`),
+                        datasets: [{
+                            label: 'Jobs Processed',
+                            data: data.workers.map(w => w.jobsProcessed),
+                            backgroundColor: '#4facfe',
+                            borderColor: '#00f2fe',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to load load chart:', error);
+            }
+        }
+
+        async function loadSystemAnalytics() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/analytics`);
+                const data = await response.json();
+
+                const metricsContainer = document.getElementById('performanceMetrics');
+                metricsContainer.innerHTML = '';
+
+                const metrics = [
+                    { label: 'Efficiency', value: `${data.efficiency?.toFixed(1) || 0}%` },
+                    { label: 'Error Rate', value: `${data.errorRate?.toFixed(2) || 0}%` },
+                    { label: 'Queue Wait Time', value: `${data.avgQueueTime?.toFixed(1) || 0}ms` },
+                    { label: 'Worker Utilization', value: `${data.workerUtilization?.toFixed(1) || 0}%` }
+                ];
+
+                metrics.forEach(metric => {
+                    const metricCard = document.createElement('div');
+                    metricCard.className = 'metric-card';
+                    metricCard.innerHTML = `
+                        <div class="metric-value">${metric.value}</div>
+                        <div class="metric-label">${metric.label}</div>
+                    `;
+                    metricsContainer.appendChild(metricCard);
+                });
+
+                // Load recommendations
+                const recommendationsContainer = document.getElementById('systemRecommendations');
+                recommendationsContainer.innerHTML = '';
+
+                if (data.recommendations && data.recommendations.length > 0) {
+                    data.recommendations.forEach(rec => {
+                        const recDiv = document.createElement('div');
+                        recDiv.className = 'insight-card';
+                        recDiv.innerHTML = `
+                            <div class="insight-title">${rec.title}</div>
+                            <div class="insight-description">${rec.description}</div>
+                        `;
+                        recommendationsContainer.appendChild(recDiv);
+                    });
+                } else {
+                    recommendationsContainer.innerHTML = '<div class="loading">No recommendations available</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load system analytics:', error);
+            }
+        }
+
+        // Control functions
+        async function startAllWorkers() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/workers/start`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('All workers started successfully', 'success');
+                    loadWorkerStatus();
+                    loadSystemStats();
+                } else {
+                    showNotification('Failed to start workers', 'error');
+                }
+            } catch (error) {
+                showNotification('Error starting workers', 'error');
+            }
+        }
+
+        async function stopAllWorkers() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/workers/stop`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('All workers stopped successfully', 'success');
+                    loadWorkerStatus();
+                    loadSystemStats();
+                } else {
+                    showNotification('Failed to stop workers', 'error');
+                }
+            } catch (error) {
+                showNotification('Error stopping workers', 'error');
+            }
+        }
+
+        async function runTestJob() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/test-job`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'map',
+                        data: Array.from({length: 1000}, (_, i) => i),
+                        options: { description: 'Dashboard test job' }
+                    })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Test job started successfully', 'success');
+                    loadJobQueue();
+                    loadSystemStats();
+                } else {
+                    showNotification('Failed to start test job', 'error');
+                }
+            } catch (error) {
+                showNotification('Error running test job', 'error');
+            }
+        }
+
+        async function clearCompletedJobs() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/jobs/clear-completed`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Completed jobs cleared', 'success');
+                    loadJobQueue();
+                    loadSystemStats();
+                } else {
+                    showNotification('Failed to clear jobs', 'error');
+                }
+            } catch (error) {
+                showNotification('Error clearing jobs', 'error');
+            }
+        }
+
+        async function optimizeSystem() {
+            try {
+                const response = await fetch(`${API_BASE}/distributed/optimize`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('System optimization completed', 'success');
+                    loadSystemAnalytics();
+                    loadWorkerStatus();
+                } else {
+                    showNotification('System optimization failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Error optimizing system', 'error');
+            }
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = type;
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '1000';
+            notification.style.padding = '15px 25px';
+            notification.style.borderRadius = '10px';
+            notification.style.fontSize = '0.9rem';
+            notification.style.fontWeight = '500';
+            notification.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+
+        // Error handling
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            updateConnectionStatus(false);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>
