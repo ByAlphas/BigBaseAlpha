@@ -4,20 +4,25 @@
 
 BigBaseAlpha is a sophisticated enterprise database system built from scratch in JavaScript. Features include encryption, caching, indexing, blockchain integration, machine learning, stream processing, and comprehensive web dashboards.
 
-![Version](https://img.shields.io/badge/version-1.1.0-green)
+![Version](https://img.shields.io/badge/version-1.2.0-green)
 # 📋 Changelog
 
-## [1.1.0] - 2025-07-31
+## [1.2.0] - 2025-07-31
+- Dashboard (port 3000) and Streaming (port 8080) are now disabled by default. These services will only start if you explicitly call `startDashboard()` or `startStreaming()`.
+- This prevents unwanted open ports when BigBaseAlpha is integrated into other projects, improving security and resource management.
+- Monitoring system now safely ignores ENOENT errors for test/temporary directories, ensuring clean test runs.
+- Full multi-format data storage support: `.json`, `.db` (binary/encrypted), `.csv`, `.xml`, `.yaml`, `.bin`, `.hybrid` formats are now supported for collections and backups.
+- New formats added in v1.1.0: `.db` (binary/encrypted), `.csv`, `.xml`, `.yaml`, `.bin`, `.hybrid`.
+- See [CHANGELOG.md](./CHANGELOG.md) for full details and previous versions.
+
+## [1.1.0] - 2025-07-31 (Summary)
 - Centralized log control: `silent` and `logger` options for all core and plugin logs
 - All logs can now be silenced or redirected in embedded/SDK usage
 - Buffer serialization/deserialization for `.db` format fully fixed and tested
-- All format tests (json, binary, hybrid, csv, xml, yaml, db) pass without error
 - Internal plugin log calls now respect the main instance's `silent`/`logger` options
 - Test scripts and error messages fully translated to English
 - `.db` file header bug (slice length) resolved for robust binary compatibility
 - Minor test and documentation improvements
-
-See [CHANGELOG.md](./CHANGELOG.md) for full details.
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Node.js](https://img.shields.io/badge/Node.js-14%2B-brightgreen)
 ![Enterprise](https://img.shields.io/badge/Enterprise-Ready-gold)
