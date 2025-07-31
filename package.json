@@ -1,6 +1,6 @@
 {
   "name": "bigbasealpha",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Professional Grade Custom Database System - A sophisticated, dependency-free database with encryption, caching, indexing, and web dashboard",
   "type": "module",
   "main": "src/alpha.js",
