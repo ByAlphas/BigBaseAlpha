@@ -56,20 +56,24 @@ const __dirname = dirname(__filename);
 export class BigBaseAlpha extends EventEmitter {
   constructor(options = {}) {
     super();
-    
+    // Central log control
+    this.silent = options.silent || false;
+    this.logger = options.logger || console;
     // Default configuration
     this.config = {
       path: options.path || './bigbase_data',
-      format: options.format || 'json', // 'json', 'binary', 'hybrid'
+      format: options.format || 'json',
       encryption: options.encryption || false,
       compression: options.compression || false,
       maxMemory: options.maxMemory || '512MB',
-      backupInterval: options.backupInterval || 3600000, // 1 hour
+      backupInterval: options.backupInterval || 3600000,
       indexing: options.indexing !== false,
       caching: options.caching !== false,
       auditLog: options.auditLog !== false,
       ttlCleanup: options.ttlCleanup !== false,
       plugins: options.plugins || [],
+      silent: this.silent,
+      logger: this.logger,
       ...options
     };
 
@@ -104,7 +108,7 @@ export class BigBaseAlpha extends EventEmitter {
     this.isInitialized = false;
     this.collections = new Map();
     this.schemas = new Map();
-    this.operationLocks = new Map(); // For concurrent operation management
+    this.operationLocks = new Map();
     this.stats = {
       totalOperations: 0,
       totalInserts: 0,
