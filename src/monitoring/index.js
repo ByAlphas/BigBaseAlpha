@@ -290,13 +290,19 @@ export class MonitoringEngine extends EventEmitter {
 
     // Database metrics (if available)
     if (this.database) {
-      const dbStats = this.database.getStats();
+      let dbStats = {};
+      try {
+        dbStats = this.database.getStats();
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err;
+        // ENOENT ise yut, yoksa fırlat
+      }
       systemMetrics.database = {
-        collections: dbStats.collections,
-        operations: dbStats.totalOperations,
-        uptime: dbStats.uptime,
-        memory: dbStats.memoryUsage,
-        cache: dbStats.cacheStats
+        collections: dbStats.collections || 0,
+        operations: dbStats.totalOperations || 0,
+        uptime: dbStats.uptime || 0,
+        memory: dbStats.memoryUsage || 0,
+        cache: dbStats.cacheStats || {}
       };
     }
 
