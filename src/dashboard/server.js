@@ -1907,10 +1907,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-async function startServer() {
+// Start dashboard server only when explicitly called
+export async function startDashboard() {
   await initDatabase();
-  
   app.listen(port, () => {
     console.log(`🚀 BigBaseAlpha Dashboard running on http://localhost:${port}`);
     console.log(`📊 Dashboard features:`);
@@ -1930,20 +1929,15 @@ async function startServer() {
     console.log(`   • CSV/JSON import/export capabilities`);
     console.log(`   • Scheduled data processing jobs`);
   });
+  // Handle graceful shutdown
+  process.on('SIGINT', () => {
+    console.log('\n👋 Shutting down dashboard server...');
+    process.exit(0);
+  });
+  process.on('SIGTERM', () => {
+    console.log('\n👋 Shutting down dashboard server...');
+    process.exit(0);
+  });
 }
 
-// Handle graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n👋 Shutting down dashboard server...');
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('\n👋 Shutting down dashboard server...');
-  process.exit(0);
-});
-
 export default app;
-
-// Always start the server when this file is executed
-startServer().catch(console.error);

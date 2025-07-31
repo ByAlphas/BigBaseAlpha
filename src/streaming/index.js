@@ -24,6 +24,7 @@ export class StreamingEngine extends EventEmitter {
     // WebSocket server
     this.wss = null;
     this.database = null;
+    this._shouldStart = false;
     
     // Connection management
     this.connections = new Map();
@@ -213,30 +214,55 @@ export class StreamingEngine extends EventEmitter {
   _handleAuth(connectionId, message) {
     const connection = this.connections.get(connectionId);
     if (!connection) return;
-
-    // Simple token-based auth (extend as needed)
-    if (this.config.enableAuth) {
-      const { token } = message;
-      // Add your authentication logic here
-      if (token === 'valid-token') {
-        connection.authenticated = true;
-        this._sendToConnection(connectionId, {
-          type: 'auth_success',
-          message: 'Authentication successful'
-        });
-      } else {
-        this._sendToConnection(connectionId, {
-          type: 'auth_failed',
-          message: 'Invalid token'
-        });
-      }
-    } else {
+    const { token } = message;
+    // Add your authentication logic here
+    if (token === 'valid-token') {
       connection.authenticated = true;
       this._sendToConnection(connectionId, {
-        type: 'auth_success',
-        message: 'Authentication not required'
+        type: 'auth',
+        status: 'success'
+      });
+    } else {
+      this._sendToConnection(connectionId, {
+        type: 'auth',
+        status: 'failed'
       });
     }
+  }
+
+  async init() {
+    if (!this._shouldStart) {
+      // Streaming engine is disabled by default
+      return;
+    }
+    try {
+      this.stats.startTime = new Date();
+      // Create WebSocket server
+      this.wss = new WebSocketServer({
+        port: this.config.port,
+        perMessageDeflate: this.config.enableCompression
+      });
+      // Setup WebSocket event handlers
+      this.wss.on('connection', (ws, request) => {
+        this._handleConnection(ws, request);
+      });
+      // Start background tasks
+      this._startHeartbeat();
+      this._startStatsCollection();
+      this._startEventProcessor();
+      this.isInitialized = true;
+      console.log(`✅ Streaming Engine initialized on port ${this.config.port}`);
+      this.emit('initialized');
+    } catch (error) {
+      console.error('Failed to initialize Streaming Engine:', error);
+      throw error;
+    }
+  }
+
+  // Explicitly start streaming server
+  async startStreaming() {
+    this._shouldStart = true;
+    await this.init();
   }
 
   /**
