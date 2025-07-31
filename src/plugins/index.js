@@ -9,13 +9,14 @@ import { join, resolve } from 'path';
 export class PluginManager extends EventEmitter {
   constructor(config) {
     super();
-    
     this.config = config;
     this.plugins = new Map();
     this.pluginConfigs = new Map();
     this.hooks = new Map();
     this.pluginPaths = config.pluginPaths || ['./plugins', './node_modules'];
     this.enabledPlugins = config.plugins || [];
+    this.silent = config.silent || false;
+    this.logger = config.logger || console;
   }
 
   async init() {
@@ -240,19 +241,19 @@ export class PluginManager extends EventEmitter {
           description: 'Core logging plugin',
           
           async onInit(db) {
-            console.log('🚀 BigBaseAlpha database initialized');
+            if (!db.silent) (db.logger || console).log('🚀 BigBaseAlpha database initialized');
           },
           
-          async onWrite(collection, data) {
-            console.log(`📝 Document written to collection: ${collection}`);
+          async onWrite(collection, data, db) {
+            if (db && !db.silent) (db.logger || console).log(`📝 Document written to collection: ${collection}`);
           },
           
-          async onDelete(collection, id) {
-            console.log(`🗑️  Document deleted from collection: ${collection}, ID: ${id}`);
+          async onDelete(collection, id, db) {
+            if (db && !db.silent) (db.logger || console).log(`🗑️  Document deleted from collection: ${collection}, ID: ${id}`);
           },
           
-          async onBackup(path) {
-            console.log(`💾 Database backup created: ${path}`);
+          async onBackup(path, db) {
+            if (db && !db.silent) (db.logger || console).log(`💾 Database backup created: ${path}`);
           }
         }
       },

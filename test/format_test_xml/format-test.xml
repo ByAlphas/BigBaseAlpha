@@ -1,0 +1,1 @@
+<root><id>format-test</id><name>Format Test</name><value>42</value><arr>1</arr><arr>2</arr><arr>3</arr><nested><foo>bar</foo><num>7</num></nested></root>

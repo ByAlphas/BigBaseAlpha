@@ -277,13 +277,13 @@ export class StorageEngine {
   async _initFormat() {
     switch (this.format) {
       case 'json':
-        // No special initialization needed for JSON
-        break;
       case 'binary':
-        // Set up binary format handlers
-        break;
       case 'hybrid':
-        // Set up hybrid format handlers
+      case 'csv':
+      case 'xml':
+      case 'yaml':
+      case 'db':
+        // No special initialization needed for these formats
         break;
       default:
         throw new Error(`Unsupported storage format: ${this.format}`);
@@ -311,13 +311,21 @@ export class StorageEngine {
         return this.compression ? '.bba.gz' : '.bba';
       case 'hybrid':
         return this.compression ? '.hyb.gz' : '.hyb';
+      case 'csv':
+        return this.compression ? '.csv.gz' : '.csv';
+      case 'xml':
+        return this.compression ? '.xml.gz' : '.xml';
+      case 'yaml':
+        return this.compression ? '.yaml.gz' : '.yaml';
+      case 'db':
+        return this.compression ? '.db.gz' : '.db';
       default:
         return '.data';
     }
   }
 
   _isDocumentFile(filename) {
-    const extensions = ['.json', '.bba', '.hyb', '.data'];
+    const extensions = ['.json', '.bba', '.hyb', '.csv', '.xml', '.yaml', '.db', '.data'];
     return extensions.some(ext => 
       filename.endsWith(ext) || filename.endsWith(`${ext}.gz`)
     );
@@ -331,6 +339,14 @@ export class StorageEngine {
         return this._serializeBinary(document);
       case 'hybrid':
         return this._serializeHybrid(document);
+      case 'csv':
+        return this._serializeCSV(document);
+      case 'xml':
+        return this._serializeXML(document);
+      case 'yaml':
+        return this._serializeYAML(document);
+      case 'db':
+        return this._serializeDB(document);
       default:
         throw new Error(`Unsupported format: ${this.format}`);
     }
@@ -344,9 +360,140 @@ export class StorageEngine {
         return this._deserializeBinary(data);
       case 'hybrid':
         return this._deserializeHybrid(data);
+      case 'csv':
+        return this._deserializeCSV(data);
+      case 'xml':
+        return this._deserializeXML(data);
+      case 'yaml':
+        return this._deserializeYAML(data);
+      case 'db':
+        return this._deserializeDB(data);
       default:
         throw new Error(`Unsupported format: ${this.format}`);
     }
+  }
+
+  // --- CSV ---
+  _serializeCSV(document) {
+    // Flatten nested objects/arrays as JSON strings
+    const flatten = obj => {
+      const flat = {};
+      for (const [k, v] of Object.entries(obj)) {
+        if (typeof v === 'object' && v !== null) {
+          flat[k] = JSON.stringify(v);
+        } else {
+          flat[k] = v;
+        }
+      }
+      return flat;
+    };
+    let arr = Array.isArray(document) ? document : [document];
+    arr = arr.map(flatten);
+    const keys = Array.from(new Set(arr.flatMap(obj => Object.keys(obj))));
+    const header = keys.join(',');
+    const rows = arr.map(row => keys.map(k => row[k] !== undefined ? JSON.stringify(row[k]) : '""').join(','));
+    return [header, ...rows].join('\n');
+  }
+
+  _deserializeCSV(data) {
+    const [header, ...rows] = data.toString().split(/\r?\n/);
+    const keys = header.split(',');
+    return rows.filter(Boolean).map(row => {
+      const values = row.split(',').map(v => {
+        try {
+          return JSON.parse(v);
+        } catch {
+          return v;
+        }
+      });
+      return Object.fromEntries(keys.map((k, i) => [k, values[i]]));
+    });
+  }
+
+  // --- XML ---
+  _serializeXML(document) {
+    const toXML = (obj, nodeName = 'root') => {
+      if (Array.isArray(obj)) {
+        return obj.map(item => toXML(item, nodeName)).join('');
+      } else if (typeof obj === 'object' && obj !== null) {
+        return `<${nodeName}>` + Object.entries(obj).map(([k, v]) => toXML(v, k)).join('') + `</${nodeName}>`;
+      } else {
+        return `<${nodeName}>${String(obj)}</${nodeName}>`;
+      }
+    };
+    return toXML(document);
+  }
+
+  _deserializeXML(data) {
+    // Simple XML to object (not robust, for demo)
+    const parseTag = str => {
+      const tagMatch = str.match(/^<([^>]+)>([\s\S]*)<\/\1>$/);
+      if (!tagMatch) return str;
+      const [, tag, content] = tagMatch;
+      if (content.match(/^<[^>]+>/)) {
+        // Nested
+        const children = [];
+        let rest = content;
+        while (rest.length) {
+          const childMatch = rest.match(/^(<[^>]+>[\s\S]*?<\/[^>]+>)([\s\S]*)$/);
+          if (!childMatch) break;
+          children.push(parseTag(childMatch[1]));
+          rest = childMatch[2];
+        }
+        return { [tag]: children };
+      } else {
+        return { [tag]: content };
+      }
+    };
+    return parseTag(data.toString());
+  }
+
+  // --- YAML ---
+  _serializeYAML(document) {
+    // Simple YAML (no dependencies)
+    const toYAML = (obj, indent = 0) => {
+      if (Array.isArray(obj)) {
+        return obj.map(item => '- ' + toYAML(item, indent + 2)).join('\n');
+      } else if (typeof obj === 'object' && obj !== null) {
+        return Object.entries(obj).map(([k, v]) => ' '.repeat(indent) + k + ': ' + toYAML(v, indent + 2)).join('\n');
+      } else {
+        return String(obj);
+      }
+    };
+    return toYAML(document);
+  }
+
+  _deserializeYAML(data) {
+    // Simple YAML to object (not robust, for demo)
+    const lines = data.toString().split(/\r?\n/);
+    const obj = {};
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const [k, ...rest] = line.split(':');
+      obj[k.trim()] = rest.join(':').trim();
+    }
+    return obj;
+  }
+
+  // --- DB (custom binary) ---
+  _serializeDB(document) {
+    // Add warning message at the top of the file
+    const warning = Buffer.from('THIS FILE CANNOT BE VIEWED DIRECTLY. IT IS MANAGED BY BIGBASEALPHA.\n');
+    const header = Buffer.from('BBA_DB1');
+    const json = JSON.stringify(document);
+    const body = Buffer.from(json, 'utf8');
+    // File = [warning][header][body]
+    return Buffer.concat([warning, header, body]);
+  }
+
+  _deserializeDB(data) {
+    // Skip warning message (find first newline) and then check header
+    const newlineIdx = data.indexOf(0x0A); // '\n'
+    if (newlineIdx === -1) throw new Error('Corrupted .db file: missing warning');
+    const header = data.slice(newlineIdx + 1, newlineIdx + 8).toString();
+    if (header !== 'BBA_DB1') throw new Error('Invalid .db file');
+    const json = data.slice(newlineIdx + 8).toString('utf8');
+    return JSON.parse(json);
   }
 
   _serializeBinary(document) {
@@ -436,19 +583,31 @@ export class StorageEngine {
     if (this.compression && filePath.endsWith('.gz')) {
       return this._readCompressedFile(filePath);
     }
-    
     const data = await fs.readFile(filePath);
     this.stats.totalBytes += data.length;
-    
-    return this.format === 'json' ? data.toString('utf8') : data;
+    if (this.format === 'json') {
+      return data.toString('utf8');
+    }
+    if (this.format === 'db') {
+      return Buffer.from(data); // Always return Buffer for .db
+    }
+    return data;
   }
 
   async _writeFile(filePath, data) {
     if (this.compression) {
       return this._writeCompressedFile(filePath + '.gz', data);
     }
-    
-    const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8');
+    // .db formatında sadece Buffer yazılmalı
+    let buffer;
+    if (this.format === 'db') {
+      if (!Buffer.isBuffer(data)) {
+        throw new Error('DB formatında sadece Buffer yazılabilir!');
+      }
+      buffer = data;
+    } else {
+      buffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8');
+    }
     await fs.writeFile(filePath, buffer);
     this.stats.totalBytes += buffer.length;
   }
