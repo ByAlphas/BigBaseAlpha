@@ -4,7 +4,20 @@
 
 BigBaseAlpha is a sophisticated enterprise database system built from scratch in JavaScript. Features include encryption, caching, indexing, blockchain integration, machine learning, stream processing, and comprehensive web dashboards.
 
-![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Version](https://img.shields.io/badge/version-1.1.0-green)
+# 📋 Changelog
+
+## [1.1.0] - 2025-07-31
+- Centralized log control: `silent` and `logger` options for all core and plugin logs
+- All logs can now be silenced or redirected in embedded/SDK usage
+- Buffer serialization/deserialization for `.db` format fully fixed and tested
+- All format tests (json, binary, hybrid, csv, xml, yaml, db) pass without error
+- Internal plugin log calls now respect the main instance's `silent`/`logger` options
+- Test scripts and error messages fully translated to English
+- `.db` file header bug (slice length) resolved for robust binary compatibility
+- Minor test and documentation improvements
+
+See [CHANGELOG.md](./CHANGELOG.md) for full details.
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Node.js](https://img.shields.io/badge/Node.js-14%2B-brightgreen)
 ![Enterprise](https://img.shields.io/badge/Enterprise-Ready-gold)

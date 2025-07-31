@@ -1,0 +1,2 @@
+id,name,value,arr,nested
+"format-test","Format Test",42,"[1,2,3]","{\"foo\":\"bar\",\"num\":7}"
