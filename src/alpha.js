@@ -45,6 +45,8 @@ import { EventSourcingEngine } from './eventsourcing/index.js';
 import { BlockchainEngine } from './blockchain/index.js';
 import { DistributedComputingEngine } from './distributed/index.js';
 import { StreamProcessor } from './streaming/processor.js';
+import TerminalUI from './ui/index.js';
+import PerformanceAnalytics from './analytics/performance.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -103,6 +105,19 @@ export class BigBaseAlpha extends EventEmitter {
     this.blockchain = new BlockchainEngine(this.config);
     // this.distributedComputing = new DistributedComputingEngine(this.config); // Temporarily disabled
     this.streamProcessor = new StreamProcessor(this.config);
+
+    // Initialize Terminal UI and Performance Analytics
+    this.ui = new TerminalUI({
+      theme: this.config.ui?.theme || 'default',
+      colors: this.config.ui?.colors !== false,
+      animation: this.config.ui?.animation !== false
+    });
+    
+    this.performance = new PerformanceAnalytics({
+      sampleInterval: this.config.performance?.sampleInterval || 1000,
+      maxSamples: this.config.performance?.maxSamples || 1000,
+      enableProfiling: this.config.performance?.enableProfiling !== false
+    });
 
     // State management
     this.isInitialized = false;
@@ -3592,6 +3607,243 @@ export class BigBaseAlpha extends EventEmitter {
     });
 
     return csvRows.join('\n');
+  }
+
+  // ==========================================
+  // Terminal UI Framework Methods
+  // ==========================================
+
+  /**
+   * Create UI component
+   * @param {Object} config - Component configuration
+   * @returns {Object} Component instance
+   */
+  createUIComponent(config) {
+    try {
+      return this.ui.createComponent(config);
+    } catch (error) {
+      this.audit.log('ui_component_creation_failed', { config, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Create chart component
+   * @param {Object} data - Chart data
+   * @param {Object} options - Chart options
+   */
+  createChart(data, options = {}) {
+    return this.ui.createComponent({
+      type: 'chart',
+      data,
+      options
+    });
+  }
+
+  /**
+   * Create table component
+   * @param {Array} data - Table data
+   * @param {Object} options - Table options
+   */
+  createTable(data, options = {}) {
+    return this.ui.createComponent({
+      type: 'table',
+      data,
+      options
+    });
+  }
+
+  /**
+   * Create log monitor
+   * @param {Object} logSource - Log source
+   * @param {Object} options - Monitor options
+   */
+  createLogMonitor(logSource, options = {}) {
+    return this.ui.createComponent({
+      type: 'log',
+      data: logSource,
+      options
+    });
+  }
+
+  /**
+   * Create progress bar
+   * @param {number} current - Current progress
+   * @param {Object} options - Progress options
+   */
+  createProgressBar(current, options = {}) {
+    return this.ui.createComponent({
+      type: 'progress',
+      data: current,
+      options
+    });
+  }
+
+  /**
+   * Create dashboard with multiple components
+   * @param {Array} components - Array of components
+   */
+  createDashboard(components) {
+    return this.ui.createDashboard(components);
+  }
+
+  // ==========================================
+  // Performance Analytics Methods
+  // ==========================================
+
+  /**
+   * Start performance monitoring
+   * @param {string} type - Monitor type (cpu, memory, disk, all)
+   * @param {Object} options - Monitor options
+   */
+  monitor(type, options = {}) {
+    try {
+      return this.performance.monitor(type, options);
+    } catch (error) {
+      this.audit.log('performance_monitor_start_failed', { type, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Start profiling an operation
+   * @param {string} name - Profile name
+   * @param {Object} options - Profiling options
+   */
+  startProfile(name, options = {}) {
+    try {
+      return this.performance.startProfile(name, options);
+    } catch (error) {
+      this.audit.log('profile_start_failed', { name, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * End profiling and get results
+   * @param {string} name - Profile name
+   */
+  endProfile(name) {
+    try {
+      const result = this.performance.endProfile(name);
+      this.audit.log('profile_completed', { 
+        name, 
+        duration: result.duration,
+        efficiency: result.summary.performance 
+      });
+      return result;
+    } catch (error) {
+      this.audit.log('profile_end_failed', { name, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Analyze query performance
+   * @param {Object} queryInfo - Query information
+   */
+  analyzeQuery(queryInfo) {
+    try {
+      return this.performance.analyzeQuery(queryInfo);
+    } catch (error) {
+      this.audit.log('query_analysis_failed', { queryInfo, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Generate performance report
+   * @param {Object} options - Report options
+   */
+  generatePerformanceReport(options = {}) {
+    try {
+      return this.performance.generateReport(options);
+    } catch (error) {
+      this.audit.log('performance_report_generation_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Get system metrics
+   */
+  getSystemMetrics() {
+    try {
+      return {
+        cpu: this.performance.getCPUUsage(),
+        memory: this.performance.getMemoryUsage(),
+        disk: this.performance.getDiskUsage(),
+        network: this.performance.getNetworkUsage()
+      };
+    } catch (error) {
+      this.audit.log('system_metrics_retrieval_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced query execution with performance profiling
+   */
+  async executeQueryWithProfiling(collectionName, query, options = {}) {
+    const profileName = `query_${collectionName}_${Date.now()}`;
+    
+    try {
+      // Start profiling
+      this.startProfile(profileName, { realtime: options.realtime });
+      
+      // Execute query
+      const result = await this.find(collectionName, query, options);
+      
+      // End profiling and analyze
+      const profile = this.endProfile(profileName);
+      const analysis = this.analyzeQuery({
+        collection: collectionName,
+        query,
+        duration: profile.duration,
+        filters: query,
+        resultCount: result.length
+      });
+      
+      return {
+        data: result,
+        performance: profile,
+        analysis
+      };
+      
+    } catch (error) {
+      this.audit.log('profiled_query_execution_failed', { 
+        collection: collectionName, 
+        query, 
+        error: error.message 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Stop all performance monitoring
+   */
+  stopPerformanceMonitoring() {
+    try {
+      this.performance.stop();
+      this.audit.log('performance_monitoring_stopped');
+    } catch (error) {
+      this.audit.log('performance_monitoring_stop_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Export performance metrics
+   * @param {string} format - Export format (json, csv)
+   */
+  exportPerformanceMetrics(format = 'json') {
+    try {
+      return this.performance.exportMetrics(format);
+    } catch (error) {
+      this.audit.log('performance_metrics_export_failed', { format, error: error.message });
+      throw error;
+    }
   }
 }
 
