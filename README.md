@@ -4,8 +4,20 @@
 
 BigBaseAlpha is a sophisticated enterprise database system built from scratch in JavaScript. Features include encryption, caching, indexing, blockchain integration, machine learning, stream processing, and comprehensive web dashboards.
 
-![Version](https://img.shields.io/badge/version-1.2.0-green)
+![Version](https://img.shields.io/badge/version-1.3.0-green)
 # 📋 Changelog
+
+## [1.3.0] - 2025-08-02
+- **Terminal UI Framework**: Rich terminal components with colors integration for enhanced developer experience
+  - ASCII charts: bar chart, line chart, pie chart visualization in terminal
+  - Dynamic data tables with sorting and filtering capabilities
+  - Real-time log monitors with colored levels (info, warn, error)
+  - Component API: `alpha.ui.createComponent({ type: 'chart', data })` for easy UI creation
+- **Profiling & Performance Monitor**: System performance monitoring through terminal interface
+  - CPU, RAM, Disk I/O live graphics and monitoring
+  - `alpha.ui.monitor('cpu')` for real-time system monitoring
+  - Log density analysis, query duration tracking, data flow analytics
+  - Performance insights and bottleneck detection
 
 ## [1.2.0] - 2025-07-31
 - Dashboard (port 3000) and Streaming (port 8080) are now disabled by default. These services will only start if you explicitly call `startDashboard()` or `startStreaming()`.
@@ -51,6 +63,13 @@ BigBaseAlpha is a sophisticated enterprise database system built from scratch in
 - **API Gateway**: Microservices management and load balancing
 - **Data Replication**: Master-slave replication with failover
 - **ETL Pipeline**: Extract, Transform, Load operations
+
+### 🎨 Terminal UI & Analytics (New in v1.3.0)
+- **Terminal UI Framework**: Rich ASCII charts, tables, and dashboards
+- **Performance Analytics**: Real-time CPU, memory, and disk monitoring
+- **Query Profiling**: Detailed performance analysis and optimization tips
+- **Interactive Components**: Progress bars, log monitors, and data tables
+- **System Metrics**: Live system performance tracking and reporting
 
 ### 🖥️ Management Tools
 - **Web Dashboard**: Professional monitoring interface
@@ -103,6 +122,67 @@ const user = await db.findOne('users', { email: 'john@example.com' });
 const adults = await db.find('users', { age: { $gte: 18 } });
 ```
 
+### 🎨 Terminal UI Framework (New in v1.3.0)
+
+```javascript
+import BigBaseAlpha from 'bigbasealpha';
+
+const db = new BigBaseAlpha({ ui: { colors: true, animation: true } });
+await db.init();
+
+// Create beautiful charts
+const chart = db.createChart({
+  type: 'bar',
+  values: [
+    { label: 'Users', value: 150 },
+    { label: 'Orders', value: 89 },
+    { label: 'Products', value: 200 }
+  ]
+}, { title: 'Database Stats', color: 'green' });
+
+chart.render(); // Displays ASCII bar chart
+
+// Create interactive tables
+const table = db.createTable(userData, {
+  title: 'User Management',
+  sortBy: 'name',
+  filterBy: 'active'
+});
+table.render();
+
+// Real-time log monitoring
+const logMonitor = db.createLogMonitor(logSource, {
+  title: 'System Logs', 
+  levels: ['info', 'warn', 'error']
+});
+```
+
+### 🔍 Performance Analytics (New in v1.3.0)
+
+```javascript
+// Real-time system monitoring
+const cpuMonitor = db.monitor('cpu', { duration: 30000 });
+const memoryMonitor = db.monitor('memory', { interval: 1000 });
+
+// Query profiling
+const result = await db.executeQueryWithProfiling('users', {
+  age: { $gte: 25 }
+});
+console.log(`Query took: ${result.performance.duration}ms`);
+console.log(`Efficiency: ${result.analysis.efficiency}%`);
+
+// Performance reporting
+const report = db.generatePerformanceReport({
+  format: 'terminal',
+  includeCharts: true
+});
+
+// System metrics
+const metrics = db.getSystemMetrics();
+console.log(`CPU: ${metrics.cpu.average}%`);
+console.log(`Memory: ${metrics.memory.system.percentage}%`);
+```
+
 ### Web Dashboard
 
 ```bash
@@ -116,6 +196,10 @@ npm run dashboard
 npm run status          # Database status
 npm run test           # Run tests
 npm run backup         # Create backup
+npm run demo:ui        # Terminal UI demo
+npm run monitor:cpu    # Live CPU monitoring
+npm run monitor:memory # Live memory monitoring
+npm run performance:report # Generate performance report
 bigbase collections    # List collections
 bigbase stats         # View statistics
 ```

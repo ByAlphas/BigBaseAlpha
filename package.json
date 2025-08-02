@@ -1,6 +1,6 @@
 {
   "name": "bigbasealpha",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Professional Grade Custom Database System - A sophisticated, dependency-free database with encryption, caching, indexing, and web dashboard",
   "type": "module",
   "main": "src/alpha.js",
@@ -12,6 +12,8 @@
     "cli": "node src/cli/index.js",
     "dashboard": "node src/dashboard/server.js",
     "test": "node test/bigbase.test.js",
+    "test:ui": "node test/ui-performance.test.js",
+    "test:all": "npm run test && npm run test:ui",
     "benchmark": "node simple-benchmark.js",
     "benchmark:full": "node benchmark-comparison.js",
     "performance": "node simple-benchmark.js",
@@ -21,7 +23,11 @@
     "restore": "node src/cli/index.js restore",
     "init": "node src/cli/index.js init",
     "status": "node src/cli/index.js status",
-    "stats": "node src/cli/index.js stats"
+    "stats": "node src/cli/index.js stats",
+    "demo:ui": "node examples/terminal-ui-demo.js",
+    "monitor:cpu": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => alpha.monitor('cpu')); })\"",
+    "monitor:memory": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => alpha.monitor('memory')); })\"",
+    "performance:report": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => { alpha.generatePerformanceReport(); alpha.close(); }); })\""
   },
   "keywords": [
     "database",
@@ -44,7 +50,13 @@
     "alpha",
     "redis-compatible",
     "memory-cache",
-    "key-value-store"
+    "key-value-store",
+    "terminal-ui",
+    "performance-analytics",
+    "monitoring",
+    "profiling",
+    "charts",
+    "dashboard-cli"
   ],
   "author": {
     "name": "BigBaseAlpha Team",
@@ -61,6 +73,7 @@
   "homepage": "https://github.com/ByAlphas/bigbasealpha#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "colors": "^1.4.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "ws": "^8.18.3"
