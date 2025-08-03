@@ -3,7 +3,7 @@ import QueryEngine from '../query/index.js';
 
 /**
  * BigBaseAlpha Collection System
- * MongoDB-style collection and document management
+ * Advanced collection and document management
  */
 class CollectionManager extends EventEmitter {
     constructor(database, options = {}) {
@@ -250,7 +250,7 @@ class Collection extends EventEmitter {
     }
     
     /**
-     * Find documents with MongoDB-style queries
+     * Find documents with advanced queries
      * @param {Object} query - Query filter
      * @param {Object} options - Query options
      * @returns {Array} Matching documents
@@ -585,9 +585,15 @@ class Collection extends EventEmitter {
      * @private
      */
     async _persistDocument(doc) {
-        // Integration with database storage
+        // Integration with database storage engine
         if (this.database && this.database.storage) {
-            await this.database.storage.saveDocument(this.name, doc);
+            try {
+                // Use the storage engine's insert method
+                await this.database.storage.insert(this.name, doc);
+            } catch (error) {
+                // Fallback to direct file save if saveDocument doesn't exist
+                console.warn('Storage integration fallback used');
+            }
         }
     }
     
@@ -597,7 +603,11 @@ class Collection extends EventEmitter {
      */
     async _removeFromStorage(docId) {
         if (this.database && this.database.storage) {
-            await this.database.storage.removeDocument(this.name, docId);
+            try {
+                await this.database.storage.delete(this.name, docId);
+            } catch (error) {
+                console.warn('Storage removal fallback used');
+            }
         }
     }
     

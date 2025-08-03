@@ -1,6 +1,6 @@
 /**
  * BigBaseAlpha Query Engine
- * MongoDB-style query processing and filtering
+ * Advanced query processing and filtering
  */
 class QueryEngine {
     constructor(collectionManager) {

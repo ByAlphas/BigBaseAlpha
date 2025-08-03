@@ -4195,11 +4195,11 @@ export class BigBaseAlpha extends EventEmitter {
   }
 
   // =====================================================
-  // COLLECTION SYSTEM (MongoDB-style)
+  // COLLECTION SYSTEM (Advanced Document Management)
   // =====================================================
 
   /**
-   * Get or create a collection (MongoDB-style)
+   * Get or create a collection (Advanced Document Management)
    * @param {string} name - Collection name
    * @param {Object} options - Collection options
    * @returns {Collection} Collection instance
@@ -4226,7 +4226,7 @@ export class BigBaseAlpha extends EventEmitter {
   }
 
   /**
-   * Advanced query with MongoDB-style operators
+   * Advanced query with powerful operators
    * @param {string} collectionName - Collection name
    * @param {Object} query - Query filter with operators
    * @param {Object} options - Query options

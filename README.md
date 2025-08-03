@@ -53,7 +53,7 @@ BigBaseAlpha is a sophisticated enterprise database system built from scratch in
 
 ### 🔧 Database Engine
 - **Multi-format Storage**: JSON, Binary, and Hybrid storage
-- **Advanced Querying**: MongoDB-like query syntax with aggregation
+- **Advanced Querying**: Powerful query syntax with aggregation
 - **Real-time Events**: Live data change notifications
 - **ACID Transactions**: Data integrity and consistency
 - **Schema Validation**: Flexible data validation rules

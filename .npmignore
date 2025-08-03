@@ -10,6 +10,32 @@ test_data/
 perf_test_db/
 backups/
 
+# Demo and performance test directories
+DEMO_COLLECTIONS_DATA/
+DEMO_PERFORMANCE_DATA/
+PERF_TEST_*/
+QUICK_TEST_*/
+performance-analysis.js
+quick-performance-assessment.js
+benchmark-comparison.js
+
+# Pattern-based directory exclusions
+demo*/
+quick*/
+perf*/
+DEMO*/
+QUICK*/
+PERF*/
+
+# Performance and test files
+*-benchmark*.js
+*perf*.js
+*-test*.js
+*test-*.js
+*-analysis*.js
+*analysis-*.js
+OPTIMIZATION_ANALYSIS.md
+
 # Build files
 *.log
 npm-debug.log*

@@ -19,6 +19,26 @@ test_data/
 backups/
 .bigbase.key
 
+# Performance test directories (temporary)
+PERF_TEST_*/
+QUICK_TEST_*/
+simple_benchmark/
+
+# Pattern-based temporary directories
+demo*/
+quick*/
+perf*/
+DEMO*/
+QUICK*/
+PERF*/
+
+# Performance analysis files
+performance-analysis.js
+quick-performance-assessment.js
+benchmark-comparison.js
+*-benchmark*.js
+*perf*.js
+
 # Logs
 *.log
 logs/
