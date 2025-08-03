@@ -4,8 +4,18 @@
 
 BigBaseAlpha is a sophisticated enterprise database system built from scratch in JavaScript. Features include encryption, caching, indexing, blockchain integration, machine learning, stream processing, and comprehensive web dashboards.
 
-![Version](https://img.shields.io/badge/version-1.3.0-green)
+![Version](https://img.shields.io/badge/version-1.4.0-green)
 # 📋 Changelog
+
+## [1.4.0] - 2025-08-03
+- **Security & Privacy Suite**: Advanced security features for data protection and privacy
+  - Self-Destruct Mode: `db.activateSelfDestruct()` with PIN protection and deep wipe
+  - Dead Man's Switch: Automatic destruction after inactivity period
+  - Paranoia Mode: Enhanced logging and tampering protection
+  - One-Time Access Keys: Data that self-destructs after single read
+  - Wipe Command: Pattern-based secure data deletion
+  - Decoy Database: Returns fake data when wrong password is used
+  - Execution Triggers: Data that executes code when accessed
 
 ## [1.3.0] - 2025-08-02
 - **Terminal UI Framework**: Rich terminal components with colors integration for enhanced developer experience
@@ -64,7 +74,16 @@ BigBaseAlpha is a sophisticated enterprise database system built from scratch in
 - **Data Replication**: Master-slave replication with failover
 - **ETL Pipeline**: Extract, Transform, Load operations
 
-### 🎨 Terminal UI & Analytics (New in v1.3.0)
+### 🔒 Security & Privacy Suite (New in v1.4.0)
+- **Self-Destruct Mode**: Database can destroy itself with PIN protection and configurable wipe levels
+- **Dead Man's Switch**: Automatic destruction after period of inactivity
+- **Paranoia Mode**: Enhanced logging, encryption, and tampering protection
+- **One-Time Access Keys**: Data that automatically deletes after single read
+- **Secure Wipe**: Pattern-based data deletion with multiple overwrite iterations
+- **Decoy Database**: Shows fake data when wrong authentication is used
+- **Execution Triggers**: Data that executes custom code when accessed
+
+### 🎨 Terminal UI & Analytics (v1.3.0)
 - **Terminal UI Framework**: Rich ASCII charts, tables, and dashboards
 - **Performance Analytics**: Real-time CPU, memory, and disk monitoring
 - **Query Profiling**: Detailed performance analysis and optimization tips
@@ -122,7 +141,60 @@ const user = await db.findOne('users', { email: 'john@example.com' });
 const adults = await db.find('users', { age: { $gte: 18 } });
 ```
 
-### 🎨 Terminal UI Framework (New in v1.3.0)
+### 🔒 Security & Privacy Suite (New in v1.4.0)
+
+```javascript
+import BigBaseAlpha from 'bigbasealpha';
+
+const db = new BigBaseAlpha({ security: { paranoidLogging: true } });
+await db.init();
+
+// Self-Destruct Mode
+const destruct = db.activateSelfDestruct({
+  timeout: 60000,     // 1 minute
+  secure: true,       // PIN required to abort
+  wipeLevel: "deep"   // Overwrite 3 times with random data
+});
+
+console.log(`Emergency PIN: ${destruct.pin}`);
+// Cancel with: db.abortDestruct(destruct.pin)
+
+// Dead Man's Switch - Auto-destruct after inactivity
+db.enableDeadMansSwitch({
+  delay: 24 * 60 * 60 * 1000, // 24 hours
+  triggerMessage: "No activity detected, erasing everything...",
+  callback: () => console.log("Goodbye...")
+});
+
+// Paranoia Mode - Enhanced security logging
+db.enableParanoia({
+  encryption: "AES-256-GCM",
+  tamperCheck: true
+});
+
+// One-Time Access Keys
+await db.setOneTime("secret", "This message will self-destruct");
+const message = await db.getOneTime("secret"); // Auto-deleted after read
+
+// Secure Wipe
+await db.wipe("sensitive*", { confirm: true, wipeLevel: "deep" });
+
+// Decoy Database
+const decoy = db.enableDecoy({
+  password: "correcthorsebatterystaple",
+  decoyData: { fake: "This is fake data" }
+});
+
+// Execution Triggers
+await db.setTrigger("trap", "🔒", {
+  onRead: () => {
+    console.log("Trap activated!");
+    db.wipe("*", { confirm: true });
+  }
+});
+```
+
+### 🎨 Terminal UI Framework (v1.3.0)
 
 ```javascript
 import BigBaseAlpha from 'bigbasealpha';
@@ -157,7 +229,7 @@ const logMonitor = db.createLogMonitor(logSource, {
 });
 ```
 
-### 🔍 Performance Analytics (New in v1.3.0)
+### 🔍 Performance Analytics (v1.3.0)
 
 ```javascript
 // Real-time system monitoring
@@ -197,9 +269,12 @@ npm run status          # Database status
 npm run test           # Run tests
 npm run backup         # Create backup
 npm run demo:ui        # Terminal UI demo
+npm run demo:security  # Security features demo
+npm run demo:paranoia  # Paranoia mode demo
 npm run monitor:cpu    # Live CPU monitoring
 npm run monitor:memory # Live memory monitoring
 npm run performance:report # Generate performance report
+npm run emergency      # Emergency shutdown (destructive!)
 bigbase collections    # List collections
 bigbase stats         # View statistics
 ```

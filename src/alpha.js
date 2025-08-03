@@ -47,6 +47,9 @@ import { DistributedComputingEngine } from './distributed/index.js';
 import { StreamProcessor } from './streaming/processor.js';
 import TerminalUI from './ui/index.js';
 import PerformanceAnalytics from './analytics/performance.js';
+import SecurityPrivacySuite from './security/privacy.js';
+import CollectionManager from './collections/index.js';
+import PerformanceEngine from './performance/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -119,11 +122,33 @@ export class BigBaseAlpha extends EventEmitter {
       enableProfiling: this.config.performance?.enableProfiling !== false
     });
 
+    // Initialize Security & Privacy Suite
+    this.securitySuite = new SecurityPrivacySuite(this, {
+      encryption: this.config.security?.encryption || 'AES-256-GCM',
+      wipeIterations: this.config.security?.wipeIterations || 3,
+      paranoidLogging: this.config.security?.paranoidLogging !== false
+    });
+
+    // Initialize Collection Manager and Performance Engine
+    this.collectionManager = new CollectionManager(this, {
+      maxCollections: this.config.collections?.maxCollections || 1000,
+      autoCreateCollections: this.config.collections?.autoCreateCollections !== false,
+      strictMode: this.config.collections?.strictMode || false
+    });
+
+    this.performanceEngine = new PerformanceEngine(this, {
+      lazyWriteDelay: this.config.performance?.lazyWriteDelay || 5000,
+      batchSize: this.config.performance?.batchSize || 100,
+      compressionEnabled: this.config.performance?.compressionEnabled !== false
+    });
+
     // State management
     this.isInitialized = false;
     this.collections = new Map();
     this.schemas = new Map();
     this.operationLocks = new Map();
+    this.lazyWrite = false; // Performance mode flag
+
     this.stats = {
       totalOperations: 0,
       totalInserts: 0,
@@ -3842,6 +3867,623 @@ export class BigBaseAlpha extends EventEmitter {
       return this.performance.exportMetrics(format);
     } catch (error) {
       this.audit.log('performance_metrics_export_failed', { format, error: error.message });
+      throw error;
+    }
+  }
+
+  // ==========================================
+  // Security & Privacy Suite Methods (v1.4.0)
+  // ==========================================
+
+  /**
+   * Activate Self-Destruct Mode
+   * Database destroys itself after timeout with secure PIN protection
+   * SAFETY: Requires explicit confirmation
+   * @param {Object} config - Self-destruct configuration
+   */
+  activateSelfDestruct(config = {}) {
+    // SAFETY: Add warning and require explicit safety check
+    if (!config.safetyCheck) {
+      console.log('⚠️  WARNING: Self-destruct mode is DESTRUCTIVE!');
+      console.log('🛡️  Add { safetyCheck: true } to activate');
+      console.log('📍 Target database:', this.config.path);
+      throw new Error('Self-destruct requires safety confirmation');
+    }
+
+    try {
+      const result = this.securitySuite.activateSelfDestruct(config);
+      this.audit.log('self_destruct_activated', { 
+        timeout: config.timeout,
+        wipeLevel: config.wipeLevel,
+        secure: config.secure,
+        dbPath: result.dbPath
+      });
+      return result;
+    } catch (error) {
+      this.audit.log('self_destruct_activation_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Abort self-destruct sequence with PIN
+   * @param {string} pin - Security PIN
+   */
+  abortDestruct(pin) {
+    try {
+      const result = this.securitySuite.abortDestruct(pin);
+      this.audit.log('self_destruct_abort_attempted', { success: result });
+      return result;
+    } catch (error) {
+      this.audit.log('self_destruct_abort_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enable Dead Man's Switch
+   * Automatic database destruction after period of inactivity
+   * @param {Object} config - Dead man's switch configuration
+   */
+  enableDeadMansSwitch(config = {}) {
+    try {
+      const result = this.securitySuite.enableDeadMansSwitch(config);
+      this.audit.log('dead_mans_switch_enabled', { delay: config.delay });
+      return result;
+    } catch (error) {
+      this.audit.log('dead_mans_switch_enable_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Disable Dead Man's Switch
+   */
+  disableDeadMansSwitch() {
+    try {
+      this.securitySuite.disableDeadMansSwitch();
+      this.audit.log('dead_mans_switch_disabled');
+    } catch (error) {
+      this.audit.log('dead_mans_switch_disable_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enable Paranoia Mode
+   * Enhanced logging and tampering protection
+   * @param {Object} config - Paranoia configuration
+   */
+  enableParanoia(config = {}) {
+    try {
+      const result = this.securitySuite.enableParanoia(config);
+      this.audit.log('paranoia_mode_enabled', { 
+        encryption: config.encryption,
+        tamperCheck: config.tamperCheck 
+      });
+      return result;
+    } catch (error) {
+      this.audit.log('paranoia_mode_enable_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Disable Paranoia Mode
+   */
+  disableParanoia() {
+    try {
+      this.securitySuite.disableParanoia();
+      this.audit.log('paranoia_mode_disabled');
+    } catch (error) {
+      this.audit.log('paranoia_mode_disable_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Set one-time access key
+   * Data that self-destructs after single read
+   * @param {string} key - Key name
+   * @param {*} value - Value to store
+   * @param {Object} options - Additional options
+   */
+  setOneTime(key, value, options = {}) {
+    try {
+      const result = this.securitySuite.setOneTime(key, value, options);
+      this.audit.log('one_time_key_set', { key });
+      return result;
+    } catch (error) {
+      this.audit.log('one_time_key_set_failed', { key, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Get one-time data (destroys after read)
+   * @param {string} key - Key name
+   */
+  async getOneTime(key) {
+    try {
+      const result = await this.securitySuite.getOneTime(key);
+      this.audit.log('one_time_key_accessed', { key });
+      return result;
+    } catch (error) {
+      this.audit.log('one_time_key_access_failed', { key, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Wipe data matching pattern
+   * Pattern-based secure data deletion
+   * SAFETY: Requires explicit confirmation
+   * @param {string} pattern - Pattern to match
+   * @param {Object} options - Wipe options
+   */
+  async wipe(pattern, options = {}) {
+    // SAFETY: Add warning and require explicit safety check
+    if (!options.safetyCheck) {
+      console.log('⚠️  WARNING: Wipe operation is DESTRUCTIVE!');
+      console.log('🛡️  Add { safetyCheck: true } to activate');
+      console.log('🎯 Pattern:', pattern);
+      console.log('📍 Target database:', this.config.path);
+      throw new Error('Wipe requires safety confirmation');
+    }
+
+    try {
+      const result = await this.securitySuite.wipe(pattern, options);
+      this.audit.log('wipe_completed', { pattern, wipedCount: result });
+      return result;
+    } catch (error) {
+      this.audit.log('wipe_failed', { pattern, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enable Decoy/Fake Mode
+   * Returns fake data when wrong password is used
+   * @param {Object} config - Decoy configuration
+   */
+  enableDecoy(config = {}) {
+    try {
+      const result = this.securitySuite.enableDecoy(config);
+      this.audit.log('decoy_mode_enabled');
+      return result;
+    } catch (error) {
+      this.audit.log('decoy_mode_enable_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Authenticate for decoy mode
+   * @param {string} password - Authentication password
+   */
+  authenticateDecoy(password) {
+    try {
+      const result = this.securitySuite.authenticateDecoy(password);
+      this.audit.log('decoy_authentication_attempted', { success: result });
+      return result;
+    } catch (error) {
+      this.audit.log('decoy_authentication_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Set execution trigger
+   * Data that executes code when accessed
+   * @param {string} key - Key name
+   * @param {*} value - Value to store
+   * @param {Object} trigger - Trigger configuration
+   */
+  setTrigger(key, value, trigger = {}) {
+    try {
+      const result = this.securitySuite.setTrigger(key, value, trigger);
+      this.audit.log('execution_trigger_set', { key });
+      return result;
+    } catch (error) {
+      this.audit.log('execution_trigger_set_failed', { key, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Execute trigger if exists
+   * @param {string} key - Key name
+   * @param {string} operation - Operation type
+   */
+  async executeTrigger(key, operation = 'read') {
+    try {
+      const result = await this.securitySuite.executeTrigger(key, operation);
+      if (result) {
+        this.audit.log('execution_trigger_executed', { key, operation });
+      }
+      return result;
+    } catch (error) {
+      this.audit.log('execution_trigger_failed', { key, operation, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Get security status
+   */
+  getSecurityStatus() {
+    try {
+      return this.securitySuite.getSecurityStatus();
+    } catch (error) {
+      this.audit.log('security_status_retrieval_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Emergency shutdown with deep wipe
+   * SAFETY: Requires multiple confirmations
+   */
+  async emergencyShutdown(options = {}) {
+    // SAFETY: Add multiple warnings
+    console.log('🚨 WARNING: EMERGENCY SHUTDOWN IS EXTREMELY DESTRUCTIVE!');
+    console.log('💀 THIS WILL PERMANENTLY DESTROY ALL DATA!');
+    console.log('📍 Target database:', this.config.path);
+    console.log('🛡️  Required options: { confirm: true, safetyCheck: true, emergencyCode: "EMERGENCY_DESTROY_ALL_DATA" }');
+    
+    if (!options.confirm || !options.safetyCheck || options.emergencyCode !== 'EMERGENCY_DESTROY_ALL_DATA') {
+      throw new Error('Emergency shutdown requires all safety confirmations');
+    }
+
+    try {
+      this.audit.log('emergency_shutdown_initiated');
+      await this.securitySuite.emergencyShutdown(options);
+    } catch (error) {
+      this.audit.log('emergency_shutdown_failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced get method with security checks
+   */
+  async get(collectionName, query) {
+    // Check for decoy mode
+    if (this.securitySuite.shouldUseDecoy()) {
+      return this.securitySuite.decoyConfig.decoyData[collectionName] || null;
+    }
+
+    // Check for one-time keys
+    if (typeof query === 'string' && query.startsWith('once:')) {
+      return await this.getOneTime(query.replace('once:', ''));
+    }
+
+    // Check for execution triggers
+    if (typeof query === 'string' && query.startsWith('trigger:')) {
+      await this.executeTrigger(query.replace('trigger:', ''), 'read');
+    }
+
+    // Original get method
+    return await this.findOne(collectionName, query);
+  }
+
+  /**
+   * Enhanced set method with security features
+   */
+  async set(collectionName, key, value, options = {}) {
+    // Check for one-time option
+    if (options.once) {
+      return await this.setOneTime(key, value, options);
+    }
+
+    // Check for trigger option
+    if (options.onRead || options.onWrite || options.onDelete) {
+      return await this.setTrigger(key, value, options);
+    }
+
+    // Original set method (using insert/update)
+    try {
+      const existing = await this.findOne(collectionName, { key });
+      if (existing) {
+        return await this.update(collectionName, existing._id, { key, value, ...options });
+      } else {
+        return await this.insert(collectionName, { key, value, ...options });
+      }
+    } catch (error) {
+      return await this.insert(collectionName, { key, value, ...options });
+    }
+  }
+
+  // =====================================================
+  // COLLECTION SYSTEM (MongoDB-style)
+  // =====================================================
+
+  /**
+   * Get or create a collection (MongoDB-style)
+   * @param {string} name - Collection name
+   * @param {Object} options - Collection options
+   * @returns {Collection} Collection instance
+   */
+  collection(name, options = {}) {
+    return this.collectionManager.collection(name, options);
+  }
+
+  /**
+   * List all collections
+   * @returns {Array} Collection names
+   */
+  listCollections() {
+    return this.collectionManager.listCollections();
+  }
+
+  /**
+   * Get collection statistics
+   * @param {string} name - Collection name
+   * @returns {Object} Collection stats
+   */
+  getCollectionStats(name) {
+    return this.collectionManager.getCollectionStats(name);
+  }
+
+  /**
+   * Advanced query with MongoDB-style operators
+   * @param {string} collectionName - Collection name
+   * @param {Object} query - Query filter with operators
+   * @param {Object} options - Query options
+   * @returns {Array} Matching documents
+   */
+  findAdvanced(collectionName, query = {}, options = {}) {
+    const collection = this.collectionManager.collection(collectionName);
+    return collection.find(query, options);
+  }
+
+  /**
+   * Query execution plan (for optimization)
+   * @param {string} collectionName - Collection name
+   * @param {Object} query - Query filter
+   * @param {Object} options - Query options
+   * @returns {Object} Execution plan
+   */
+  explainQuery(collectionName, query = {}, options = {}) {
+    return this.collectionManager.queryEngine.explain(collectionName, query, options);
+  }
+
+  // =====================================================
+  // PERFORMANCE ENGINE (Lazy Write)
+  // =====================================================
+
+  /**
+   * Enable lazy write mode for better performance
+   * @param {Object} options - Lazy write options
+   */
+  enableLazyWrite(options = {}) {
+    this.performanceEngine.enableLazyWrite(options);
+    this.lazyWrite = true;
+  }
+
+  /**
+   * Disable lazy write mode and flush all pending operations
+   */
+  async disableLazyWrite() {
+    await this.performanceEngine.disableLazyWrite();
+    this.lazyWrite = false;
+  }
+
+  /**
+   * Force flush all pending operations
+   */
+  async flushOperations() {
+    if (this.lazyWrite) {
+      await this.performanceEngine.flush();
+    }
+  }
+
+  /**
+   * Get performance statistics
+   */
+  getPerformanceStats() {
+    return this.performanceEngine.getStats();
+  }
+
+  /**
+   * Enhanced insert with lazy write support
+   */
+  async insert(collectionName, data, options = {}) {
+    this.stats.totalInserts++;
+    this.stats.totalOperations++;
+
+    try {
+      if (this.lazyWrite) {
+        // Queue operation for lazy writing
+        const collection = this.collectionManager.collection(collectionName);
+        const doc = await collection.insertOne(data, options);
+        
+        // Queue for persistence
+        this.performanceEngine.queueOperation(collectionName, 'insert', {
+          document: doc
+        });
+        
+        return doc;
+      } else {
+        // Immediate write
+        const collection = this.collectionManager.collection(collectionName);
+        return await collection.insertOne(data, options);
+      }
+    } catch (error) {
+      this.audit.log('insert_failed', { collection: collectionName, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced find with advanced query support
+   */
+  async find(collectionName, query = {}, options = {}) {
+    this.stats.totalReads++;
+    this.stats.totalOperations++;
+
+    try {
+      const collection = this.collectionManager.collection(collectionName);
+      return collection.find(query, options);
+    } catch (error) {
+      this.audit.log('find_failed', { collection: collectionName, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced findOne with advanced query support
+   */
+  async findOne(collectionName, query = {}, options = {}) {
+    this.stats.totalReads++;
+    this.stats.totalOperations++;
+
+    try {
+      const collection = this.collectionManager.collection(collectionName);
+      return collection.findOne(query, options);
+    } catch (error) {
+      this.audit.log('findOne_failed', { collection: collectionName, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced update with lazy write support
+   */
+  async update(collectionName, query, updateData, options = {}) {
+    this.stats.totalUpdates++;
+    this.stats.totalOperations++;
+
+    try {
+      const collection = this.collectionManager.collection(collectionName);
+      const result = await collection.update(query, updateData, options);
+
+      if (this.lazyWrite && result.modifiedCount > 0) {
+        // Queue operations for lazy writing
+        const modifiedDocs = result.modifiedDocuments || [];
+        for (const doc of modifiedDocs) {
+          this.performanceEngine.queueOperation(collectionName, 'update', {
+            document: doc
+          });
+        }
+      }
+
+      return result;
+    } catch (error) {
+      this.audit.log('update_failed', { collection: collectionName, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced delete with lazy write support
+   */
+  async delete(collectionName, query = {}, options = {}) {
+    this.stats.totalDeletes++;
+    this.stats.totalOperations++;
+
+    try {
+      const collection = this.collectionManager.collection(collectionName);
+      const result = await collection.delete(query, options);
+
+      if (this.lazyWrite && result.deletedCount > 0) {
+        // Queue operations for lazy writing
+        const deletedDocs = result.deletedDocuments || [];
+        for (const doc of deletedDocs) {
+          this.performanceEngine.queueOperation(collectionName, 'delete', {
+            documentId: doc._id
+          });
+        }
+      }
+
+      return result;
+    } catch (error) {
+      this.audit.log('delete_failed', { collection: collectionName, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Count documents in collection
+   */
+  async count(collectionName, query = {}) {
+    try {
+      const collection = this.collectionManager.collection(collectionName);
+      return collection.count(query);
+    } catch (error) {
+      this.audit.log('count_failed', { collection: collectionName, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Create index on collection
+   */
+  async createIndex(collectionName, keys, options = {}) {
+    try {
+      const collection = this.collectionManager.collection(collectionName);
+      collection.createIndex(keys, options);
+      this.audit.log('index_created', { collection: collectionName, keys });
+    } catch (error) {
+      this.audit.log('index_creation_failed', { collection: collectionName, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Enhanced close method with lazy write cleanup
+   */
+  async close() {
+    console.log('🔄 Closing BigBaseAlpha database...');
+
+    try {
+      // Flush any pending lazy write operations
+      if (this.lazyWrite) {
+        console.log('💾 Flushing pending operations...');
+        await this.performanceEngine.flush();
+        await this.performanceEngine.destroy();
+      }
+
+      // Close all engines
+      if (this.collectionManager) {
+        console.log('📚 Closing collection manager...');
+        // Collection manager cleanup if needed
+      }
+
+      // Continue with existing close logic...
+      const engines = [
+        { name: 'ETL Engine', instance: this.etl },
+        { name: 'Streaming Engine', instance: this.streaming },
+        { name: 'Analytics Engine', instance: this.analytics },
+        { name: 'API Gateway', instance: this.apiGateway },
+        { name: 'ML Engine', instance: this.mlEngine },
+        { name: 'Replication Engine', instance: this.replicationEngine },
+        { name: 'Monitoring Engine', instance: this.monitoringEngine },
+        { name: 'Database Connectors', instance: this.databaseConnectors },
+        { name: 'GraphQL Engine', instance: this.graphqlEngine },
+        { name: 'Redis Cache', instance: this.redisCache },
+        { name: 'Event Sourcing', instance: this.eventSourcing },
+        { name: 'Blockchain Engine', instance: this.blockchain },
+        { name: 'Stream Processor', instance: this.streamProcessor }
+      ];
+
+      for (const engine of engines) {
+        if (engine.instance && typeof engine.instance.close === 'function') {
+          try {
+            await engine.instance.close();
+            console.log(`✅ ${engine.name} closed successfully`);
+          } catch (error) {
+            console.warn(`⚠️ Error closing ${engine.name}:`, error.message);
+          }
+        }
+      }
+
+      this.isInitialized = false;
+      this.emit('closed');
+      console.log('✅ BigBaseAlpha database closed successfully');
+
+    } catch (error) {
+      console.error('❌ Error during database close:', error);
       throw error;
     }
   }

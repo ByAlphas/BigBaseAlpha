@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.4.0] - 2025-08-03
+### Added - Security & Privacy Suite
+- **Self-Destruct Mode**: Database can destroy itself after a timeout with secure PIN cancellation
+  - `db.activateSelfDestruct({ timeout, secure, wipeLevel })` - Configurable destruction with deep wipe
+  - Deep wipe overwrites data 3 times with random data for secure deletion
+  - Secure PIN protection: `db.abortDestruct("pin")` to cancel destruction
+- **Dead Man's Switch**: Automatic database destruction after period of inactivity
+  - `db.enableDeadMansSwitch({ delay, triggerMessage, callback })` - Auto-destruct on inactivity
+  - Perfect for offline systems and emergency situations
+- **Paranoia Mode**: Enhanced logging and tampering protection
+  - Every operation (get, set, delete) is hashed and timestamped with encryption
+  - `db.enableParanoia({ encryption, tamperCheck })` - Self-encrypting log system
+- **One-Time Access Keys**: Data that self-destructs after single read
+  - `db.set("key", "value", { once: true })` - Auto-delete after first access
+- **Wipe Command**: Pattern-based secure data deletion
+  - `db.wipe("pattern*")` - Secure overwrite deletion for pattern matching
+- **Fake Mode / Decoy Database**: Returns fake data when wrong password is used
+  - `db.enableDecoy({ password, realDb, decoyDb })` - Honeypot protection
+- **Execution Triggers**: Data that executes code when accessed
+  - Trigger functions on data read: `{ onRead: () => {} }` option
+
 ## [1.3.0] - 2025-08-02
 ### Added
 - **Terminal UI Framework**: Rich terminal components with colors integration for enhanced developer experience

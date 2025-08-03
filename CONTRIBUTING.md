@@ -5,7 +5,7 @@ We welcome contributions to BigBaseAlpha! This document provides guidelines for 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18.0.0 or higher
+- Node.js 14.0.0 or higher
 - Git
 
 ### Setup Development Environment
@@ -13,7 +13,7 @@ We welcome contributions to BigBaseAlpha! This document provides guidelines for 
 1. Fork the repository
 2. Clone your fork:
    ```bash
-   git clone https://github.com/your-username/bigbasealpha.git
+   git clone https://github.com/ByAlphas/bigbasealpha.git
    cd bigbasealpha
    ```
 
@@ -280,7 +280,7 @@ We follow [Semantic Versioning](https://semver.org/):
 ## 🆘 Getting Help
 
 ### Resources
-- [GitHub Issues](https://github.com/your-org/bigbasealpha/issues)
+- [GitHub Issues](https://github.com/ByAlphas/bigbasealpha/issues)
 - [Documentation](README.md)
 - [Examples](examples/)
 

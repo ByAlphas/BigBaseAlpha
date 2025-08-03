@@ -1,0 +1,21 @@
+{
+  "path": "./DEMO_PERFORMANCE_DATA",
+  "format": "json",
+  "encryption": false,
+  "compression": false,
+  "maxMemory": "512MB",
+  "backupInterval": 3600000,
+  "indexing": true,
+  "caching": true,
+  "auditLog": true,
+  "ttlCleanup": true,
+  "plugins": [],
+  "silent": false,
+  "logger": {},
+  "apiGateway": {
+    "enabled": false
+  },
+  "security": {
+    "paranoidLogging": false
+  }
+}

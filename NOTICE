@@ -32,6 +32,15 @@ Node.js built-in modules:
 - MIT License
 - Copyright Node.js contributors
 
+Colors.js (https://github.com/Marak/colors.js)
+- MIT License
+- Copyright (c) Marak Squires
+
+Performance Hooks (Node.js built-in):
+- Events, Performance measurement tools
+- MIT License
+- Copyright Node.js contributors
+
 ================================================================================
 
 For questions about this notice, please contact: team@bigbasealpha.com
