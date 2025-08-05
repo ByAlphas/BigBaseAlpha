@@ -598,11 +598,11 @@ export class StorageEngine {
     if (this.compression) {
       return this._writeCompressedFile(filePath + '.gz', data);
     }
-    // .db formatında sadece Buffer yazılmalı
+    // Only Buffer should be written in .db format
     let buffer;
     if (this.format === 'db') {
       if (!Buffer.isBuffer(data)) {
-        throw new Error('DB formatında sadece Buffer yazılabilir!');
+        throw new Error('Only Buffer can be written in DB format!');
       }
       buffer = data;
     } else {

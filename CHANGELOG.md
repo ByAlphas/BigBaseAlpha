@@ -1,5 +1,58 @@
 # Changelog
 
+## [1.5.0] - 2025-08-05
+### Added - Enterprise Authentication & API Features
+- **JWT Authentication & User Management**: Complete authentication system with role-based access control
+  - JWT token-based authentication with refresh tokens
+  - User management with roles: admin, user, readonly, api
+  - API key generation and management for third-party access
+  - Session management with automatic cleanup
+  - Login attempt protection with account lockout
+  - Multi-factor authentication ready architecture
+- **Auto-Generated REST API**: Full REST API with automatic endpoint generation
+  - Auto-generated CRUD endpoints for all collections: GET, POST, PUT, DELETE, PATCH
+  - OpenAPI/Swagger documentation with interactive UI
+  - Pagination, filtering, sorting, and search capabilities
+  - Bulk operations support (insert, update, delete many)
+  - Rate limiting and CORS support
+  - Authentication middleware integration
+- **Real-time Dashboard Enhancement**: WebSocket-based live monitoring
+  - Real-time metrics streaming via WebSocket connections
+  - Live system monitoring: CPU, memory, database operations
+  - Real-time alerts and notifications system
+  - Client subscription management for different data channels
+  - Live query execution with real-time results
+  - User activity tracking and session monitoring
+- **Master-Slave Replication**: High availability with automatic failover
+  - Master-slave replication with operation log synchronization
+  - Automatic failover with master election process
+  - Heartbeat monitoring and health checks
+  - Data synchronization with compression support
+  - Network-based replication protocol
+  - Manual failover capabilities for maintenance
+
+### Enhanced
+- **New API Commands**:
+  - `npm run api:start` - Start REST API server (port 3001)
+  - `npm run dashboard:realtime` - Start real-time dashboard (port 8080)
+  - `npm run replication:master` - Start as master node
+  - `npm run replication:slave` - Start as slave node
+  - `npm run auth:demo` - Create demo admin user
+  - `npm run services:start` - Start all v1.5.0 services
+  - `npm run status` - Enhanced system status with v1.5.0 features
+
+### Architecture
+- **Enterprise-Ready Features**: Full authentication, API, and replication stack
+- **Microservices Architecture**: Separate services for API, dashboard, and replication
+- **WebSocket Integration**: Real-time communication for dashboard and monitoring
+- **Security Enhancements**: JWT tokens, API keys, role-based permissions
+- **High Availability**: Master-slave replication with automatic failover
+
+### Breaking Changes
+- Authentication now required for REST API access
+- Dashboard WebSocket requires authentication tokens
+- New configuration structure for v1.5.0 features
+
 ## [1.4.5] - 2025-08-03
 ### Added - Performance Engine & Advanced Collection System
 - **Lazy Write Performance Engine**: Significant write performance improvements with configurable batching

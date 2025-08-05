@@ -884,4 +884,10 @@ export class Aggregate {
   }
 }
 
+// Add missing setDatabase method to EventSourcingEngine
+EventSourcingEngine.prototype.setDatabase = function(database) {
+  this.database = database;
+  console.log('🔗 Event Sourcing Engine linked to database');
+};
+
 export default EventSourcingEngine;

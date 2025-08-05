@@ -894,6 +894,14 @@ export class StreamProcessor extends EventEmitter {
       }
     }
   }
+
+  /**
+   * Set database reference for stream processor integration
+   */
+  setDatabase(database) {
+    this.database = database;
+    console.log('🔗 Stream Processor linked to database');
+  }
 }
 
 export default StreamProcessor;

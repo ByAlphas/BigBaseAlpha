@@ -1,6 +1,6 @@
 /**
- * Full-Text Search ve Query Profiler Test Örneği
- * BigBaseAlpha'nın yeni özelliklerini test eder
+ * Full-Text Search and Query Profiler Test Example
+ * Tests BigBaseAlpha's advanced search and profiling features
  */
 import BigBaseAlpha from '../src/alpha.js';
 import { existsSync } from 'fs';

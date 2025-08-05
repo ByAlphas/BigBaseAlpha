@@ -30,7 +30,57 @@ We welcome contributions to BigBaseAlpha! This document provides guidelines for 
 5. Try the examples:
    ```bash
    node examples/basic-usage.js
+   node demo-v1.5.0.js  # v1.5.0 Enterprise features demo
+   node demo-hsm.js     # v1.5.0 HSM Security demo (100% Offline)
    ```
+
+6. Test the v1.5.0 enterprise features:
+   ```bash
+   npm run services:start    # Start all v1.5.0 services
+   npm run api:start        # REST API (port 3001)
+   npm run dashboard:realtime # Real-time dashboard (port 8080)
+   npm run auth:demo        # Create demo admin user
+   npm run hsm:demo         # HSM security demonstration
+   ```
+
+## 🔐 HSM Development Guidelines (v1.5.0)
+
+### Working with HSM Module
+BigBaseAlpha v1.5.0 includes a complete offline HSM implementation. When contributing to HSM-related features:
+
+#### HSM Security Principles
+- **100% Offline Operation**: Never add network dependencies to HSM code
+- **Air-Gapped Ready**: Ensure all HSM functions work without internet
+- **Tamper Detection**: Maintain system fingerprinting and integrity checks
+- **Encrypted Storage**: All keys must be encrypted at rest using AES-256-GCM
+- **Audit Trail**: Log all HSM operations for security monitoring
+
+#### HSM Code Standards
+```javascript
+// Good: Proper HSM operation with error handling
+async function secureOperation(data, keyId) {
+  try {
+    const encrypted = await this.hsm.encrypt(data, keyId);
+    this.hsm._logAccess('encrypt', keyId);
+    return encrypted;
+  } catch (error) {
+    this.emit('hsm:error', error);
+    throw new Error(`HSM operation failed: ${error.message}`);
+  }
+}
+
+// Bad: Direct crypto without HSM protection
+function unsecureOperation(data) {
+  return crypto.createHash('sha256').update(data).digest('hex');
+}
+```
+
+#### HSM Testing Requirements
+- Test all HSM operations in offline mode
+- Verify tamper detection mechanisms
+- Validate key generation with different algorithms
+- Test backup and recovery procedures
+- Ensure audit logging captures all operations
 
 ## 📝 Development Guidelines
 
@@ -47,11 +97,14 @@ src/
 ├── core/           # Main database engine
 ├── storage/        # Storage adapters
 ├── security/       # Security modules
+├── auth/           # JWT Authentication & User Management (v1.5.0)
+├── api/            # Auto-generated REST API (v1.5.0)
+├── dashboard/      # Web dashboard & Real-time monitoring (v1.5.0)
+├── replication/    # Master-slave replication (v1.5.0)
 ├── indexing/       # Indexing system
 ├── caching/        # Caching layer
 ├── plugins/        # Plugin system
 ├── cli/           # Command-line interface
-├── dashboard/     # Web dashboard
 └── utils/         # Utilities
 ```
 
@@ -73,6 +126,12 @@ node --test test/bigbase.test.js
 
 # Run with verbose output
 node --test --reporter=verbose test/**/*.test.js
+
+# Test v1.5.0 enterprise features
+npm run test:auth         # Authentication system tests
+npm run test:api          # REST API tests
+npm run test:replication  # Replication tests
+npm run demo-v1.5.0       # Complete feature integration test
 ```
 
 ### Writing Tests

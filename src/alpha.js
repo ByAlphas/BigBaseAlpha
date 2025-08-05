@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 BigBaseAlpha Team
+ * Copyright 2025 ByAlphas
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import { PluginManager } from './plugins/index.js';
 import { AuditLogger } from './utils/audit.js';
 import { ConfigManager } from './utils/config.js';
 import { AuthManager } from './security/auth.js';
+import { OfflineHSM } from './security/hsm.js';
 import { BackupManager } from './backup/index.js';
 import { SearchEngine } from './search/index.js';
 import { QueryProfiler } from './profiler/index.js';
@@ -50,6 +51,10 @@ import PerformanceAnalytics from './analytics/performance.js';
 import SecurityPrivacySuite from './security/privacy.js';
 import CollectionManager from './collections/index.js';
 import PerformanceEngine from './performance/index.js';
+import AuthenticationManager from './auth/index.js';
+import RESTAPIGenerator from './api/rest.js';
+import RealtimeDashboard from './dashboard/realtime.js';
+import ReplicationManager from './replication/manager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -64,7 +69,7 @@ export class BigBaseAlpha extends EventEmitter {
     // Central log control
     this.silent = options.silent || false;
     this.logger = options.logger || console;
-    // Default configuration
+    // Default configuration with modular control
     this.config = {
       path: options.path || './bigbase_data',
       format: options.format || 'json',
@@ -79,6 +84,29 @@ export class BigBaseAlpha extends EventEmitter {
       plugins: options.plugins || [],
       silent: this.silent,
       logger: this.logger,
+      
+      // 🔧 Modular Features (Default: Disabled for Clean Installation)
+      modules: {
+        // Core features (always enabled)
+        authentication: options.modules?.authentication !== false,
+        hsm: options.modules?.hsm !== false, // HSM Security
+        
+        // Advanced features (disabled by default)
+        apiGateway: options.modules?.apiGateway || false,
+        machineLearning: options.modules?.machineLearning || false,
+        replication: options.modules?.replication || false,
+        monitoring: options.modules?.monitoring || false,
+        databaseConnectors: options.modules?.databaseConnectors || false,
+        graphql: options.modules?.graphql || false,
+        eventSourcing: options.modules?.eventSourcing || false,
+        blockchain: options.modules?.blockchain || false,
+        streamProcessor: options.modules?.streamProcessor || false,
+        
+        // Optional convenience features
+        restAPI: options.modules?.restAPI || false,
+        realtimeDashboard: options.modules?.realtimeDashboard || false
+      },
+      
       ...options
     };
 
@@ -97,17 +125,28 @@ export class BigBaseAlpha extends EventEmitter {
     this.etlEngine = new ETLEngine(this.config);
     this.streamingEngine = new StreamingEngine(this.config);
     this.analyticsEngine = new AnalyticsEngine(this.config);
-    this.apiGateway = new APIGateway(this.config);
-    this.mlEngine = new MLEngine(this.config);
-    this.replicationEngine = new ReplicationEngine(this.config);
-    this.monitoringEngine = new MonitoringEngine(this.config);
-    this.databaseConnectors = new DatabaseConnectors(this.config);
-    this.graphqlEngine = new GraphQLEngine(this.config);
+    
+    // 🔧 Conditional Module Initialization (Only if enabled)
+    this.apiGateway = this.config.modules.apiGateway ? new APIGateway(this.config) : null;
+    this.mlEngine = this.config.modules.machineLearning ? new MLEngine(this.config) : null;
+    this.replicationEngine = this.config.modules.replication ? new ReplicationEngine(this.config) : null;
+    this.monitoringEngine = this.config.modules.monitoring ? new MonitoringEngine(this.config) : null;
+    this.databaseConnectors = this.config.modules.databaseConnectors ? new DatabaseConnectors(this.config) : null;
+    this.graphqlEngine = this.config.modules.graphql ? new GraphQLEngine(this.config) : null;
     this.redisCache = new RedisLikeCache(this.config);
-    this.eventSourcing = new EventSourcingEngine(this.config);
-    this.blockchain = new BlockchainEngine(this.config);
-    // this.distributedComputing = new DistributedComputingEngine(this.config); // Temporarily disabled
-    this.streamProcessor = new StreamProcessor(this.config);
+    this.eventSourcing = this.config.modules.eventSourcing ? new EventSourcingEngine(this.config) : null;
+    this.blockchain = this.config.modules.blockchain ? new BlockchainEngine(this.config) : null;
+    this.streamProcessor = this.config.modules.streamProcessor ? new StreamProcessor(this.config) : null;
+    
+    // Initialize Offline HSM for Maximum Security (100% Offline)
+    this.hsm = new OfflineHSM({
+      secureStorePath: join(this.config.path, 'hsm'),
+      keySize: 256,
+      algorithm: 'aes-256-gcm',
+      tamperDetection: true,
+      autoBackup: true,
+      maxKeyAge: 7776000000 // 90 days
+    });
 
     // Initialize Terminal UI and Performance Analytics
     this.ui = new TerminalUI({
@@ -140,6 +179,37 @@ export class BigBaseAlpha extends EventEmitter {
       lazyWriteDelay: this.config.performance?.lazyWriteDelay || 5000,
       batchSize: this.config.performance?.batchSize || 100,
       compressionEnabled: this.config.performance?.compressionEnabled !== false
+    });
+
+    // Initialize v1.5.0 new features
+    this.authManager = new AuthenticationManager(this, {
+      jwtSecret: this.config.auth?.jwtSecret,
+      tokenExpiry: this.config.auth?.tokenExpiry || '24h',
+      requireEmailVerification: this.config.auth?.requireEmailVerification || false,
+      maxLoginAttempts: this.config.auth?.maxLoginAttempts || 5
+    });
+
+    this.restAPI = new RESTAPIGenerator(this, this.authManager, {
+      port: this.config.api?.port || 3001,
+      enableSwagger: this.config.api?.enableSwagger !== false,
+      enableCors: this.config.api?.enableCors !== false,
+      rateLimiting: this.config.api?.rateLimiting !== false
+    });
+
+    this.realtimeDashboard = new RealtimeDashboard(this, this.authManager, {
+      wsPort: this.config.dashboard?.wsPort || 8080,
+      updateInterval: this.config.dashboard?.updateInterval || 1000,
+      enableMetrics: this.config.dashboard?.enableMetrics !== false,
+      enableAlerts: this.config.dashboard?.enableAlerts !== false
+    });
+
+    this.replicationManager = new ReplicationManager(this, {
+      role: this.config.replication?.role || 'master',
+      port: this.config.replication?.port || 9000,
+      slaves: this.config.replication?.slaves || [],
+      masterHost: this.config.replication?.masterHost || 'localhost',
+      masterPort: this.config.replication?.masterPort || 9000,
+      enableCompression: this.config.replication?.enableCompression !== false
     });
 
     // State management
@@ -198,30 +268,74 @@ export class BigBaseAlpha extends EventEmitter {
       
       await this.analyticsEngine.init();
       
-      // API Gateway - only init if enabled
-      if (this.config.apiGateway?.enabled !== false) {
+      // 🔧 Conditional Module Initialization
+      if (this.config.modules.apiGateway && this.apiGateway) {
         await this.apiGateway.init();
+        this._logModule('✅ API Gateway initialized on port', this.apiGateway.port);
       }
       
-      await this.mlEngine.init();
-      await this.replicationEngine.init();
-      await this.monitoringEngine.init();
-      await this.databaseConnectors.init();
-      await this.graphqlEngine.init();
-      
-      // Redis Cache - only init if enabled
-      if (this.config.redis?.enabled !== false) {
-        await this.redisCache.init();
+      if (this.config.modules.machineLearning && this.mlEngine) {
+        await this.mlEngine.init();
+        this._logModule('✅ Machine Learning Engine initialized');
       }
+      
+      if (this.config.modules.replication && this.replicationEngine) {
+        await this.replicationEngine.init();
+        this._logModule('🔄 Initializing Data Replication Engine...');
+      } else {
+        this._logModule('⚠️ Replication is disabled in configuration');
+      }
+      
+      if (this.config.modules.monitoring && this.monitoringEngine) {
+        await this.monitoringEngine.init();
+        this._logModule('✅ Advanced Monitoring System initialized');
+      } else {
+        this._logModule('📊 Initializing Advanced Monitoring System...');
+      }
+      
+      if (this.config.modules.databaseConnectors && this.databaseConnectors) {
+        await this.databaseConnectors.init();
+        this._logModule('✅ Database Connectors initialized');
+      } else {
+        this._logModule('⚠️ Database connectors are disabled in configuration');
+      }
+      
+      if (this.config.modules.graphql && this.graphqlEngine) {
+        await this.graphqlEngine.init();
+        this._logModule('✅ GraphQL Engine initialized');
+      } else {
+        this._logModule('⚠️ GraphQL is disabled in configuration');
+      }
+      
+      // Initialize v1.5.0 features
+      console.log('🔄 Initializing BigBaseAlpha v1.5.0 features...');
+      
+      // Initialize Authentication Manager
+      await this.authManager._initializeCollections();
+      console.log('🔒 Authentication system initialized');
+      
+      // Initialize REST API (but don't start server yet)
+      console.log('🌐 REST API generator ready');
+      
+      // Initialize Real-time Dashboard (but don't start WebSocket yet)
+      console.log('📊 Real-time Dashboard ready');
+      
+      // Initialize Replication Manager (but don't start yet)
+      console.log('🔄 Replication Manager ready');
+      
+      // Redis Cache - always init (lightweight)
+      await this.redisCache.init();
       
       // Event Sourcing - only init if enabled
-      if (this.config.eventSourcing?.enabled !== false) {
+      if (this.config.modules.eventSourcing && this.eventSourcing) {
         await this.eventSourcing.initialize();
+        this._logModule('✅ Event Sourcing Engine initialized');
       }
       
       // Blockchain - only init if enabled
-      if (this.config.blockchain?.enabled !== false) {
+      if (this.config.modules.blockchain && this.blockchain) {
         await this.blockchain.initialize();
+        this._logModule('✅ Blockchain Engine initialized');
       }
       
       this.backupManager.setDatabase(this);
@@ -234,16 +348,44 @@ export class BigBaseAlpha extends EventEmitter {
       
       this.analyticsEngine.setDatabase(this);
       
-      if (this.config.apiGateway?.enabled !== false) {
+      // Conditional setDatabase calls for optional modules
+      if (this.apiGateway) {
         this.apiGateway.setDatabase(this);
       }
       
-      this.mlEngine.setDatabase(this);
-      this.replicationEngine.setDatabase(this);
-      this.monitoringEngine.setDatabase(this);
-      this.databaseConnectors.setDatabase(this);
-      this.graphqlEngine.setDatabase(this);
+      if (this.mlEngine) {
+        this.mlEngine.setDatabase(this);
+      }
+      
+      if (this.replicationEngine) {
+        this.replicationEngine.setDatabase(this);
+      }
+      
+      if (this.monitoringEngine) {
+        this.monitoringEngine.setDatabase(this);
+      }
+      
+      if (this.databaseConnectors) {
+        this.databaseConnectors.setDatabase(this);
+      }
+      
+      if (this.graphqlEngine) {
+        this.graphqlEngine.setDatabase(this);
+      }
+      
       this.redisCache.setDatabase(this);
+      
+      if (this.eventSourcing) {
+        this.eventSourcing.setDatabase(this);
+      }
+      
+      if (this.blockchain) {
+        this.blockchain.setDatabase(this);
+      }
+      
+      if (this.streamProcessor) {
+        this.streamProcessor.setDatabase(this);
+      }
 
       // Load existing collections
       await this._loadCollections();
@@ -956,6 +1098,19 @@ export class BigBaseAlpha extends EventEmitter {
 
     this.isInitialized = false;
     this.emit('closed');
+    
+    console.log('🔄 Closing BigBaseAlpha database...');
+    console.log('📚 Closing collection manager...');
+    console.log('✅ BigBaseAlpha database closed successfully');
+    
+    // Force process exit after a brief delay to ensure cleanup
+    if (!this.config.silent) {
+      setTimeout(() => {
+        if (typeof process !== 'undefined' && process.exit) {
+          process.exit(0);
+        }
+      }, 100);
+    }
   }
 
   // Private methods
@@ -1174,6 +1329,7 @@ export class BigBaseAlpha extends EventEmitter {
   }
 
   _stopBackgroundTasks() {
+    // Clear all timers and intervals
     if (this.backupTimer) {
       clearInterval(this.backupTimer);
       this.backupTimer = null;
@@ -1186,6 +1342,22 @@ export class BigBaseAlpha extends EventEmitter {
       clearInterval(this.cacheTimer);
       this.cacheTimer = null;
     }
+    
+    // Clear any other background timers
+    if (this.performanceTimer) {
+      clearInterval(this.performanceTimer);
+      this.performanceTimer = null;
+    }
+    if (this.healthCheckTimer) {
+      clearInterval(this.healthCheckTimer);
+      this.healthCheckTimer = null;
+    }
+    if (this.metricsTimer) {
+      clearInterval(this.metricsTimer);
+      this.metricsTimer = null;
+    }
+    
+    console.log('✅ All background tasks stopped');
   }
 
   async _cleanupExpiredDocuments() {
@@ -4484,6 +4656,281 @@ export class BigBaseAlpha extends EventEmitter {
 
     } catch (error) {
       console.error('❌ Error during database close:', error);
+      throw error;
+    }
+  }
+
+  // ===== V1.5.0 NEW FEATURES =====
+
+  /**
+   * Start REST API server
+   */
+  async startRESTAPI(options = {}) {
+    try {
+      const mergedOptions = { ...this.config.api, ...options };
+      this.restAPI.options = { ...this.restAPI.options, ...mergedOptions };
+      
+      await this.restAPI.start();
+      console.log(`🌐 REST API started on port ${this.restAPI.options.port}`);
+      
+      this.emit('restAPIStarted', { port: this.restAPI.options.port });
+      return this.restAPI;
+    } catch (error) {
+      console.error('Failed to start REST API:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Stop REST API server
+   */
+  async stopRESTAPI() {
+    try {
+      await this.restAPI.stop();
+      console.log('🛑 REST API stopped');
+      this.emit('restAPIStopped');
+    } catch (error) {
+      console.error('Failed to stop REST API:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Start Real-time Dashboard
+   */
+  async startRealtimeDashboard(options = {}) {
+    try {
+      const mergedOptions = { ...this.config.dashboard, ...options };
+      this.realtimeDashboard.options = { ...this.realtimeDashboard.options, ...mergedOptions };
+      
+      await this.realtimeDashboard.start();
+      console.log(`📊 Real-time Dashboard started on port ${this.realtimeDashboard.options.wsPort}`);
+      
+      this.emit('dashboardStarted', { port: this.realtimeDashboard.options.wsPort });
+      return this.realtimeDashboard;
+    } catch (error) {
+      console.error('Failed to start Real-time Dashboard:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Stop Real-time Dashboard
+   */
+  async stopRealtimeDashboard() {
+    try {
+      await this.realtimeDashboard.stop();
+      console.log('🛑 Real-time Dashboard stopped');
+      this.emit('dashboardStopped');
+    } catch (error) {
+      console.error('Failed to stop Real-time Dashboard:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Start Replication (Master or Slave)
+   */
+  async startReplication(options = {}) {
+    try {
+      const mergedOptions = { ...this.config.replication, ...options };
+      this.replicationManager.options = { ...this.replicationManager.options, ...mergedOptions };
+      
+      await this.replicationManager.start();
+      console.log(`🔄 Replication started as ${this.replicationManager.options.role}`);
+      
+      this.emit('replicationStarted', { 
+        role: this.replicationManager.options.role,
+        port: this.replicationManager.options.port 
+      });
+      return this.replicationManager;
+    } catch (error) {
+      console.error('Failed to start replication:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Stop Replication
+   */
+  async stopReplication() {
+    try {
+      await this.replicationManager.stop();
+      console.log('🛑 Replication stopped');
+      this.emit('replicationStopped');
+    } catch (error) {
+      console.error('Failed to stop replication:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create user with authentication
+   */
+  async createUser(userData) {
+    try {
+      return await this.authManager.createUser(userData);
+    } catch (error) {
+      console.error('Failed to create user:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Login user
+   */
+  async loginUser(credentials, metadata = {}) {
+    try {
+      return await this.authManager.login(credentials, metadata);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate API key for user
+   */
+  async generateAPIKey(userId, options = {}) {
+    try {
+      return await this.authManager.generateAPIKey(userId, options);
+    } catch (error) {
+      console.error('Failed to generate API key:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Start all v1.5.0 services
+   */
+  async startAllServices(options = {}) {
+    const services = [];
+    
+    try {
+      // Start REST API
+      if (options.restAPI !== false) {
+        await this.startRESTAPI(options.restAPI || {});
+        services.push('REST API');
+      }
+      
+      // Start Real-time Dashboard
+      if (options.dashboard !== false) {
+        await this.startRealtimeDashboard(options.dashboard || {});
+        services.push('Real-time Dashboard');
+      }
+      
+      // Start Replication
+      if (options.replication && options.replication.enabled) {
+        await this.startReplication(options.replication);
+        services.push('Replication');
+      }
+      
+      console.log(`🚀 BigBaseAlpha v1.5.0 services started: ${services.join(', ')}`);
+      this.emit('allServicesStarted', { services });
+      
+      return { success: true, services };
+    } catch (error) {
+      console.error('Failed to start all services:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get v1.5.0 system status
+   */
+  getSystemStatus() {
+    return {
+      version: '1.5.0',
+      initialized: this.isInitialized,
+      services: {
+        restAPI: {
+          running: !!this.restAPI.server,
+          port: this.restAPI.options.port,
+          stats: this.restAPI.getAPIStats()
+        },
+        dashboard: {
+          running: !!this.realtimeDashboard.wsServer,
+          port: this.realtimeDashboard.options.wsPort,
+          stats: this.realtimeDashboard.getDashboardStats()
+        },
+        replication: {
+          running: this.replicationManager.isActive,
+          role: this.replicationManager.options.role,
+          port: this.replicationManager.options.port,
+          status: this.replicationManager.getReplicationStatus()
+        }
+      },
+      database: {
+        collections: this.collections.size,
+        lazyWrite: this.lazyWrite,
+        stats: this.stats
+      },
+      uptime: this.stats.startTime ? Date.now() - this.stats.startTime : 0
+    };
+  }
+
+  /**
+   * Log module status (only if not silent)
+   */
+  _logModule(message, ...args) {
+    if (!this.silent) {
+      console.log(message, ...args);
+    }
+  }
+
+  /**
+   * Stop all running services and clean up resources
+   */
+  async stopAllServices() {
+    this._logModule('🛑 Stopping all BigBaseAlpha services...');
+    
+    try {
+      // Stop conditional modules only if they exist
+      if (this.apiGateway) {
+        await this.apiGateway.close();
+        this._logModule('✅ API Gateway closed');
+      }
+      
+      // Stop REST API
+      if (this.restAPI) {
+        await this.restAPI.stop();
+        this._logModule('✅ REST API stopped');
+      }
+      
+      // Stop Real-time Dashboard
+      if (this.realtimeDashboard) {
+        await this.stopRealtimeDashboard();
+        this._logModule('✅ Real-time Dashboard stopped');
+      }
+      
+      // Stop Replication
+      if (this.replicationManager) {
+        await this.stopReplication();
+        this._logModule('✅ Replication stopped');
+      }
+      
+      // Stop Machine Learning Engine
+      if (this.mlEngine) {
+        await this.mlEngine.close();
+        this._logModule('✅ Machine Learning Engine closed');
+      }
+      
+      // Stop ETL Scheduler
+      if (this.etlEngine && this.etlEngine.scheduler) {
+        this.etlEngine.scheduler.stop();
+      }
+      
+      // Clear all intervals and monitoring
+      if (this.monitoring && this.monitoring.metricsCollector) {
+        clearInterval(this.monitoring.metricsCollector.interval);
+      }
+      
+      // Close database
+      await this.close();
+      
+      console.log('✅ All services stopped successfully');
+    } catch (error) {
+      console.error('❌ Error stopping services:', error);
       throw error;
     }
   }

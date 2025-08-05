@@ -295,7 +295,7 @@ export class MonitoringEngine extends EventEmitter {
         dbStats = this.database.getStats();
       } catch (err) {
         if (err.code !== 'ENOENT') throw err;
-        // ENOENT ise yut, yoksa fırlat
+        // Ignore ENOENT error, throw others
       }
       systemMetrics.database = {
         collections: dbStats.collections || 0,

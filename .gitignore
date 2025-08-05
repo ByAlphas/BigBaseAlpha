@@ -19,25 +19,75 @@ test_data/
 backups/
 .bigbase.key
 
-# Performance test directories (temporary)
-PERF_TEST_*/
-QUICK_TEST_*/
-simple_benchmark/
+# Test and development directories
+demo_v1.5.0/
+*_TEST_*/
+*test*/
+*TEST*/
+*demo*/
+*DEMO*/
+*performance*/
+*PERFORMANCE*/
+*benchmark*/
+*BENCHMARK*/
 
-# Pattern-based temporary directories
-demo*/
-quick*/
-perf*/
-DEMO*/
-QUICK*/
-PERF*/
+# Temporary files and logs
+*.tmp
+*.temp
+*.log
+audit.log
+search_indexes.json
 
-# Performance analysis files
-performance-analysis.js
-quick-performance-assessment.js
-benchmark-comparison.js
-*-benchmark*.js
-*perf*.js
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Production secrets
+.bigbase.key
+*.pem
+*.key
+private/
+
+# Coverage and test reports
+coverage/
+.nyc_output/
+test-results/
+comprehensive-*.js
+focused-*.js
+minimal-*.js
+quick-*.js
+single-*.js
+simple-*.js
+redis-*.js
+etl-*.js
+system-*.js
+replication-*.js
+eventsourcing-*.js
+file-check.js
+start-*.js
+
+# Empty HTML files
+*-test.html
+*test.html
+blockchain.html
+dashboard-test.html
+
+# Empty documentation files  
+README_clean.md
+README-SUMMARY.md
+sample_*.json
 
 # Logs
 *.log

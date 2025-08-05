@@ -1,50 +1,90 @@
-# Development files
-node_modules/
-.DS_Store
+# Development and test files - DO NOT INCLUDE IN NPM PACKAGE
+.git/
+.gitignore
 .vscode/
-.env
-.env.local
+.idea/
+node_modules/
+coverage/
 
-# Test files
+# Environment and security files
+.env*
+.bigbase.key
+*.pem
+*.key
+private/
+
+# Test data and runtime directories
+bigbase_data/
 test_data/
 perf_test_db/
 backups/
+*_TEST_*/
+*test*/
+*TEST*/
+*demo*/
+*DEMO*/
+*performance*/
+*PERFORMANCE*/
+*benchmark*/
+*BENCHMARK*/
 
-# Demo and performance test directories
-DEMO_COLLECTIONS_DATA/
-DEMO_PERFORMANCE_DATA/
-PERF_TEST_*/
-QUICK_TEST_*/
+# Development and analysis files
+OPTIMIZATION_ANALYSIS.md
+MODULAR_GUIDE.md
 performance-analysis.js
 quick-performance-assessment.js
+quick-security-verify.js
+simple-benchmark.js
+simple-benchmark-v1.5.0.js
 benchmark-comparison.js
+quick-v1.5.0-benchmark.js
+safe-security-test.js
+demo-hsm.js
+demo-v1.5.0.js
+multi-size-performance-test.js
+ultra-performance-test.js
+ultra-read-query-test.js
+simple-batch-test.js
+batch-write-optimization.js
 
-# Pattern-based directory exclusions
-demo*/
-quick*/
-perf*/
-DEMO*/
-QUICK*/
-PERF*/
-
-# Performance and test files
-*-benchmark*.js
-*perf*.js
+# Test scripts and temporary files
 *-test*.js
 *test-*.js
+*-benchmark*.js
+*benchmark-*.js
+*-demo*.js
+*demo-*.js
 *-analysis*.js
 *analysis-*.js
-OPTIMIZATION_ANALYSIS.md
-
-# Build files
+*.tmp
+*.temp
 *.log
+
+# OS and IDE files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+audit.log
 
-# Runtime files
-bigbase_data/
-.bigbase.key
+# Include only essential files for production use
+!src/
+!examples/
+!README.md
+!LICENSE
+!NOTICE
+!CHANGELOG.md
+!CONTRIBUTING.md
+!package.json
+*.hsmkey
+*.hsm
+**/hsm/**
 
 # Development scripts
 *debug*.js

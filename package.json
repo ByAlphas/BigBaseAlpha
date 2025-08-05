@@ -1,9 +1,19 @@
 {
   "name": "bigbasealpha",
-  "version": "1.4.5",
-  "description": "Professional Grade Custom Database System - A sophisticated, dependency-free database with encryption, caching, indexing, and web dashboard",
+  "version": "1.5.0",
+  "description": "Enterprise-Grade NoSQL Database System with Offline HSM Security - Complete database platform with encryption, caching, indexing, JWT authentication, auto-generated REST API, real-time dashboard, and master-slave replication",
   "type": "module",
   "main": "src/alpha.js",
+  "author": "ByAlphas",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ByAlphas/bigbasealpha",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ByAlphas/bigbasealpha.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ByAlphas/bigbasealpha/issues"
+  },
   "bin": {
     "bigbase": "./src/cli/index.js"
   },
@@ -11,10 +21,6 @@
     "start": "node src/alpha.js",
     "cli": "node src/cli/index.js",
     "dashboard": "node src/dashboard/server.js",
-    "test": "node test/bigbase.test.js",
-    "test:ui": "node test/ui-performance.test.js",
-    "test:security": "node test/security.test.js",
-    "test:all": "npm run test && npm run test:ui && npm run test:security",
     "benchmark": "node simple-benchmark.js",
     "benchmark:full": "node benchmark-comparison.js",
     "performance": "node simple-benchmark.js",
@@ -23,17 +29,26 @@
     "backup": "node src/cli/index.js backup",
     "restore": "node src/cli/index.js restore",
     "init": "node src/cli/index.js init",
-    "status": "node src/cli/index.js status",
+    "status": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => { console.log(JSON.stringify(alpha.getSystemStatus(), null, 2)); }); })\"",
     "stats": "node src/cli/index.js stats",
     "demo:ui": "node examples/terminal-ui-demo.js",
     "demo:collections": "node examples/collections-performance-demo.js",
     "demo:security": "node examples/security-demo.js",
     "verify:security": "node quick-security-verify.js",
+    "hsm:demo": "node demo-hsm.js",
+    "hsm:health": "node -e \"import('./src/security/hsm.js').then(({OfflineHSM}) => { const hsm = new OfflineHSM(); hsm._initializeSecureStorage().then(() => hsm.healthCheck()).then(h => console.log('HSM Health:', h)); })\"",
+    "hsm:status": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => { const status = alpha.hsm.getStatus(); console.log('HSM Status:', status); }); })\"",
     "monitor:cpu": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => alpha.monitor('cpu')); })\"",
     "monitor:memory": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => alpha.monitor('memory')); })\"",
     "performance:report": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => { alpha.generatePerformanceReport(); alpha.close(); }); })\"",
     "demo:paranoia": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => { alpha.enableParanoia(); console.log('Paranoia mode active'); alpha.close(); }); })\"",
-    "emergency:help": "node -e \"console.log('🚨 Emergency shutdown requires:'); console.log('{ confirm: true, safetyCheck: true, emergencyCode: \\\"EMERGENCY_DESTROY_ALL_DATA\\\" }'); console.log('⚠️  THIS WILL DESTROY ALL DATA PERMANENTLY!');\""
+    "emergency:help": "node -e \"console.log('🚨 Emergency shutdown requires:'); console.log('{ confirm: true, safetyCheck: true, emergencyCode: \\\"EMERGENCY_DESTROY_ALL_DATA\\\" }'); console.log('⚠️  THIS WILL DESTROY ALL DATA PERMANENTLY!');\"",
+    "api:start": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => alpha.startRESTAPI()); })\"",
+    "dashboard:realtime": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => alpha.startRealtimeDashboard()); })\"",
+    "replication:master": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => alpha.startReplication({role: 'master'})); })\"",
+    "replication:slave": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => alpha.startReplication({role: 'slave'})); })\"",
+    "auth:demo": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(async () => { const user = await alpha.createUser({username: 'admin', password: 'admin123', role: 'admin'}); console.log('Demo user created:', user); }); })\"",
+    "services:start": "node -e \"import('./src/alpha.js').then(({default: Alpha}) => { const alpha = new Alpha(); alpha.init().then(() => alpha.startAllServices()); })\""
   },
   "keywords": [
     "database",
@@ -69,6 +84,12 @@
     "charts",
     "dashboard-cli",
     "security",
+    "hsm",
+    "hardware-security-module",
+    "offline-security",
+    "air-gapped",
+    "tamper-detection",
+    "encrypted-storage",
     "privacy",
     "self-destruct",
     "dead-mans-switch",
@@ -78,24 +99,14 @@
     "execution-triggers",
     "secure-wipe"
   ],
-  "author": {
-    "name": "ByAlphas",
-    "url": "https://github.com/ByAlphas/bigbasealpha"
-  },
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ByAlphas/bigbasealpha.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ByAlphas/bigbasealpha/issues"
-  },
-  "homepage": "https://github.com/ByAlphas/bigbasealpha#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.2.0",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "ioredis": "^5.7.0",
+    "mongodb": "^6.18.0",
     "ws": "^8.18.3"
   },
   "engines": {
@@ -105,11 +116,11 @@
   "files": [
     "src/",
     "examples/",
-    "test/",
     "README.md",
     "LICENSE",
     "NOTICE",
-    "CONTRIBUTING.md"
+    "CONTRIBUTING.md",
+    "CHANGELOG.md"
   ],
   "config": {
     "port": "3000",

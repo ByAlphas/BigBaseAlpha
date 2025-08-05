@@ -1,6 +1,6 @@
 /**
  * BigBaseAlpha - Distributed Computing Engine
- * Paralel işlem desteği ve dağıtık hesaplama sistemi
+ * Parallel processing support and distributed computing system
  * 
  * Features:
  * - Task Distribution & Load Balancing

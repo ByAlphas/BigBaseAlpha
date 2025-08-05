@@ -2,12 +2,16 @@
  * BigBaseAlpha - Blockchain Integration Engine
  * Enterprise-grade blockchain integration with distributed ledger technology
  * Supports multiple blockchain networks and cryptocurrency transactions
+ * WITH OFFLINE HSM INTEGRATION FOR MAXIMUM SECURITY
+ * 
+ * @copyright 2025 ByAlphas. All rights reserved.
  */
 
 import { EventEmitter } from 'events';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
+import { OfflineHSM } from '../security/hsm.js';
 
 export class BlockchainEngine extends EventEmitter {
   constructor(options = {}) {
@@ -53,6 +57,15 @@ export class BlockchainEngine extends EventEmitter {
     this.mempool = new Map();
     this.txQueue = [];
     
+    // HSM Integration for Maximum Security (100% Offline)
+    this.hsm = new OfflineHSM({
+      secureStorePath: path.join(this.config.dataPath, 'hsm'),
+      keySize: 256,
+      algorithm: 'aes-256-gcm',
+      tamperDetection: true,
+      autoBackup: true
+    });
+    
     // Statistics
     this.stats = {
       totalBlocks: 0,
@@ -66,7 +79,8 @@ export class BlockchainEngine extends EventEmitter {
       circulatingSupply: 0,
       marketCap: 0,
       gasPrice: 20,
-      uptime: Date.now()
+      uptime: Date.now(),
+      hsmStatus: 'initializing'
     };
     
     this.initialized = false;
@@ -74,12 +88,17 @@ export class BlockchainEngine extends EventEmitter {
   }
 
   /**
-   * Initialize Blockchain Engine
+   * Initialize Blockchain Engine with HSM Security
    */
   async initialize() {
     if (this.initialized) return;
 
     try {
+      // Initialize HSM first for maximum security
+      console.log('🔐 Initializing BigBaseAlpha HSM (100% Offline)...');
+      await this.hsm._initializeSecureStorage();
+      this.stats.hsmStatus = 'active';
+      
       // Create directories
       await this._ensureDirectories();
       
@@ -121,23 +140,34 @@ export class BlockchainEngine extends EventEmitter {
   }
 
   /**
-   * Create a new wallet
+   * Create a new wallet with HSM-secured private key
    */
   async createWallet(userId, initialBalance = 0) {
+    // Generate secure key pair using HSM
+    const keyId = `wallet_${crypto.randomUUID()}`;
+    await this.hsm.generateKey(keyId, 'asymmetric', 256);
+    
+    // Generate traditional keys for compatibility
     const privateKey = crypto.randomBytes(32).toString('hex');
     const publicKey = crypto.createHash('sha256').update(privateKey).digest('hex');
     const address = this._generateAddress(publicKey);
+    
+    // Encrypt private key using HSM
+    const encryptedPrivateKey = await this.hsm.encrypt(privateKey, keyId);
     
     const wallet = {
       id: crypto.randomUUID(),
       userId,
       address,
       publicKey,
-      privateKey,
+      privateKey: null, // Never store plaintext private key
+      encryptedPrivateKey, // HSM-encrypted private key
+      hsmKeyId: keyId, // Reference to HSM key
       balance: initialBalance,
       transactions: [],
       createdAt: Date.now(),
-      isActive: true
+      isActive: true,
+      securityLevel: 'HSM-Protected'
     };
     
     this.wallets.set(address, wallet);
@@ -156,8 +186,8 @@ export class BlockchainEngine extends EventEmitter {
     
     await this._persistWallet(wallet);
     
-    this.emit('walletCreated', wallet);
-    return wallet;
+    this.emit('walletCreated', { ...wallet, privateKey: '[HSM-PROTECTED]' });
+    return { ...wallet, privateKey: '[HSM-PROTECTED]' };
   }
 
   /**
@@ -671,12 +701,12 @@ export class BlockchainEngine extends EventEmitter {
       miner: 'system'
     };
     
-    genesisBlock.hash = this._calculateBlockHash(genesisBlock);
+    genesisBlock.hash = await this._calculateBlockHash(genesisBlock);
     
     this.blockchain.push(genesisBlock);
     await this._persistBlock(genesisBlock);
     
-    console.log('🔗 Genesis block created');
+    console.log('🔗 Genesis block created with HSM security');
   }
 
   _generateAddress(publicKey) {
@@ -716,7 +746,10 @@ export class BlockchainEngine extends EventEmitter {
     return crypto.createHash('sha256').update(data).digest('hex');
   }
 
-  _calculateBlockHash(block) {
+  /**
+   * Calculate block hash using HSM for maximum security
+   */
+  async _calculateBlockHash(block) {
     const data = JSON.stringify({
       index: block.index,
       timestamp: block.timestamp,
@@ -725,7 +758,15 @@ export class BlockchainEngine extends EventEmitter {
       nonce: block.nonce
     });
     
-    return crypto.createHash('sha256').update(data).digest('hex');
+    // Use HSM for secure hash generation with salt
+    try {
+      const hsmResult = await this.hsm.hash(data, 'sha256');
+      return hsmResult.hash;
+    } catch (error) {
+      // Fallback to traditional hashing if HSM fails
+      console.warn('HSM hash failed, using fallback:', error.message);
+      return crypto.createHash('sha256').update(data).digest('hex');
+    }
   }
 
   async _validateTransaction(fromAddress, toAddress, amount) {
@@ -770,12 +811,13 @@ export class BlockchainEngine extends EventEmitter {
       hash: '',
       merkleRoot: this._calculateMerkleRoot(transactions),
       difficulty: this.config.difficulty,
-      miner: 'system'
+      miner: 'system',
+      hsmSecured: true
     };
     
-    // Proof of work
+    // Proof of work with HSM-secured hashing
     while (true) {
-      block.hash = this._calculateBlockHash(block);
+      block.hash = await this._calculateBlockHash(block);
       if (block.hash.startsWith('0'.repeat(this.config.difficulty))) {
         break;
       }
@@ -804,8 +846,8 @@ export class BlockchainEngine extends EventEmitter {
   }
 
   async _validateBlock(block) {
-    // Validate hash
-    const calculatedHash = this._calculateBlockHash(block);
+    // Validate hash using HSM
+    const calculatedHash = await this._calculateBlockHash(block);
     if (calculatedHash !== block.hash) {
       return false;
     }
@@ -956,7 +998,33 @@ export class BlockchainEngine extends EventEmitter {
   }
 
   /**
-   * Shutdown gracefully
+   * Get HSM health status and blockchain security info
+   */
+  async getSecurityStatus() {
+    const hsmHealth = await this.hsm.healthCheck();
+    
+    return {
+      hsm: hsmHealth,
+      blockchain: {
+        totalBlocks: this.blockchain.length,
+        securedWallets: Array.from(this.wallets.values())
+          .filter(w => w.hsmKeyId).length,
+        difficulty: this.config.difficulty,
+        lastBlockSecured: this.blockchain.length > 0 ? 
+          this.blockchain[this.blockchain.length - 1].hsmSecured : false
+      },
+      security: {
+        offlineMode: true,
+        tamperDetection: this.hsm.config.tamperDetection,
+        encryptionAlgorithm: this.hsm.config.algorithm,
+        keySize: this.hsm.config.keySize,
+        autoBackup: this.hsm.config.autoBackup
+      }
+    };
+  }
+
+  /**
+   * Shutdown gracefully with HSM cleanup
    */
   async shutdown() {
     this.isRunning = false;
@@ -970,8 +1038,19 @@ export class BlockchainEngine extends EventEmitter {
       await this._persistSmartContract(contract);
     }
     
-    console.log('🛑 Blockchain Engine shutdown complete');
+    // Shutdown HSM securely
+    await this.hsm.shutdown();
+    
+    console.log('🛑 Blockchain Engine with HSM shutdown complete');
     this.emit('shutdown');
+  }
+
+  /**
+   * Set database reference for blockchain integration
+   */
+  setDatabase(database) {
+    this.database = database;
+    console.log('🔗 Blockchain Engine linked to database');
   }
 }
 

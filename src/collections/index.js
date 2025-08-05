@@ -248,6 +248,48 @@ class Collection extends EventEmitter {
         
         return insertedDoc;
     }
+
+    /**
+     * Insert multiple documents
+     * @param {Array} docs - Documents to insert
+     * @param {Object} options - Insert options
+     * @returns {Array} Inserted documents
+     */
+    async insertMany(docs, options = {}) {
+        if (!Array.isArray(docs)) {
+            throw new Error('Documents must be an array');
+        }
+
+        const insertedDocs = [];
+        const errors = [];
+
+        for (let i = 0; i < docs.length; i++) {
+            try {
+                const insertedDoc = await this.insert(docs[i]);
+                insertedDocs.push(insertedDoc);
+            } catch (error) {
+                if (options.ordered !== false) {
+                    // Stop on first error in ordered mode
+                    throw new Error(`Insert failed at index ${i}: ${error.message}`);
+                } else {
+                    // Continue on error in unordered mode
+                    errors.push({ index: i, error: error.message });
+                }
+            }
+        }
+
+        this.emit('documentsInserted', { 
+            documents: insertedDocs, 
+            errors: errors.length > 0 ? errors : undefined 
+        });
+
+        return {
+            acknowledged: true,
+            insertedCount: insertedDocs.length,
+            insertedDocuments: insertedDocs,
+            errors: errors.length > 0 ? errors : undefined
+        };
+    }
     
     /**
      * Find documents with advanced queries
@@ -310,13 +352,29 @@ class Collection extends EventEmitter {
         this.manager.stats.totalOperations++;
         this.manager.stats.lastOperation = 'update';
         
-        this.emit('documentsUpdated', { count: modifiedCount, documents: modifiedDocuments });
+        this.emit('documentsUpdated', {
+            modifiedCount,
+            modifiedDocuments,
+            query,
+            update
+        });
         
         return {
-            matchedCount: documents.length,
+            acknowledged: true,
             modifiedCount,
-            modifiedDocuments: options.returnModified ? modifiedDocuments : undefined
+            modifiedDocuments
         };
+    }
+
+    /**
+     * Update a single document
+     * @param {Object} query - Query to match document
+     * @param {Object} update - Update operations
+     * @param {Object} options - Update options
+     * @returns {Object} Update result
+     */
+    async updateOne(query, update, options = {}) {
+        return this.update(query, update, { ...options, limit: 1 });
     }
     
     /**
