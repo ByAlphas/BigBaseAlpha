@@ -69,7 +69,7 @@ export class ReplicationManager extends EventEmitter {
                 await this._startSlave();
             }
             
-            console.log(`🔄 Replication started as ${this.options.role}`);
+            console.log(`[PROCESS] Replication started as ${this.options.role}`);
             this.emit('replicationStarted', { role: this.options.role });
             
         } catch (error) {
@@ -99,7 +99,7 @@ export class ReplicationManager extends EventEmitter {
             clearTimeout(this.electionTimeout);
         }
         
-        console.log('🛑 Replication stopped');
+        console.log('[SHUTDOWN] Replication stopped');
         this.emit('replicationStopped');
     }
     
@@ -164,7 +164,7 @@ export class ReplicationManager extends EventEmitter {
             port: socket.remotePort
         };
         
-        console.log(`🔗 Slave connected: ${slave.address}:${slave.port}`);
+        console.log(`[LINK] Slave connected: ${slave.address}:${slave.port}`);
         
         socket.on('data', (data) => {
             this._handleSlaveMessage(slaveId, data);
@@ -210,7 +210,7 @@ export class ReplicationManager extends EventEmitter {
             });
             
             this.masterConnection.on('close', () => {
-                console.warn('⚠️ Master connection lost');
+                console.warn('[WARN] Master connection lost');
                 this._handleMasterDisconnect();
             });
             
@@ -333,7 +333,7 @@ export class ReplicationManager extends EventEmitter {
             throw new Error('Failover can only be initiated from slave nodes');
         }
         
-        console.log('🔄 Forcing manual failover...');
+        console.log('[PROCESS] Forcing manual failover...');
         this._startFailoverProcess();
     }
     
@@ -344,7 +344,7 @@ export class ReplicationManager extends EventEmitter {
         this.failoverInProgress = true;
         this.healthStatus.failoverCandidate = true;
         
-        console.log('🗳️ Starting master election...');
+        console.log('[ELECTION] Starting master election...');
         
         // Wait for election timeout
         this.electionTimeout = setTimeout(() => {
@@ -374,7 +374,7 @@ export class ReplicationManager extends EventEmitter {
             // Start accepting slave connections
             this._startHeartbeat();
             
-            console.log('✅ Successfully promoted to master');
+            console.log('[SUCCESS] Successfully promoted to master');
             this.emit('promotedToMaster');
             
         } catch (error) {
@@ -461,7 +461,7 @@ export class ReplicationManager extends EventEmitter {
                     if (message.key === this.options.replicationKey) {
                         slave.authenticated = true;
                         this._sendToSlave(slaveId, { type: 'auth_success' });
-                        console.log(`✅ Slave ${slaveId} authenticated`);
+                        console.log(`[SUCCESS] Slave ${slaveId} authenticated`);
                     } else {
                         this._sendToSlave(slaveId, { type: 'auth_failed' });
                         slave.socket.destroy();
@@ -491,7 +491,7 @@ export class ReplicationManager extends EventEmitter {
                     break;
                     
                 case 'auth_success':
-                    console.log('✅ Authenticated with master');
+                    console.log('[SUCCESS] Authenticated with master');
                     this._startSlaveSync();
                     break;
                     
@@ -512,12 +512,12 @@ export class ReplicationManager extends EventEmitter {
     _handleSlaveDisconnect(slaveId) {
         this.slaveConnections.delete(slaveId);
         this.healthStatus.connectedSlaves = this.slaveConnections.size;
-        console.log(`❌ Slave ${slaveId} disconnected`);
+        console.log(`[ERROR] Slave ${slaveId} disconnected`);
     }
     
     _handleMasterDisconnect() {
         if (this.options.role === 'slave' && !this.failoverInProgress) {
-            console.warn('⚠️ Master connection lost - starting failover process');
+            console.warn('[WARN] Master connection lost - starting failover process');
             this._startFailoverProcess();
         }
     }

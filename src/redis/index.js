@@ -10,6 +10,16 @@ export class RedisLikeCache extends EventEmitter {
   constructor(config = {}) {
     super();
     
+    // Logger setup (fallback to default if not provided)
+    this.logger = config.logger || {
+      info: (...args) => console.log('[INFO] [REDIS]', ...args),
+      warn: (...args) => console.warn('[WARN] [REDIS]', ...args),
+      error: (...args) => console.error('[ERROR] [REDIS]', ...args),
+      success: (...args) => console.log('[SUCCESS] [REDIS]', ...args),
+      debug: (...args) => console.log('[DEBUG] [REDIS]', ...args),
+      process: (...args) => console.log('[PROCESS] [REDIS]', ...args)
+    };
+    
     this.config = {
       enabled: config.redis?.enabled !== false,
       maxMemory: config.redis?.maxMemory || '256MB',
@@ -63,10 +73,8 @@ export class RedisLikeCache extends EventEmitter {
   async init() {
     if (this.isInitialized) return;
 
-    console.log('🔄 Initializing Redis-like Cache Layer...');
-
-    if (!this.config.enabled) {
-      console.log('⚠️ Redis-like cache is disabled in configuration');
+      this.logger.process('Initializing Redis-like Cache Layer...');    if (!this.config.enabled) {
+      console.log('[WARN] Redis-like cache is disabled in configuration');
       return;
     }
 
@@ -87,7 +95,7 @@ export class RedisLikeCache extends EventEmitter {
       this.isInitialized = true;
       this.stats.uptime = Date.now();
 
-      console.log(`✅ Redis-like Cache Layer initialized`);
+      console.log(`[SUCCESS] Redis-like Cache Layer initialized`);
       console.log(`   - Max Memory: ${this.config.maxMemory}`);
       console.log(`   - Eviction Policy: ${this.config.evictionPolicy}`);
       console.log(`   - Persistence: ${this.config.persistence ? 'Enabled' : 'Disabled'}`);
@@ -99,7 +107,7 @@ export class RedisLikeCache extends EventEmitter {
       });
 
     } catch (error) {
-      console.error('❌ Failed to initialize Redis-like Cache:', error.message);
+      console.error('[ERROR] Failed to initialize Redis-like Cache:', error.message);
       throw error;
     }
   }
@@ -1064,7 +1072,7 @@ export class RedisLikeCache extends EventEmitter {
       try {
         await this._saveSnapshot();
       } catch (error) {
-        console.error('❌ Failed to save snapshot:', error.message);
+        console.error('[ERROR] Failed to save snapshot:', error.message);
       }
     }, this.config.snapshotInterval);
   }
@@ -1107,13 +1115,13 @@ export class RedisLikeCache extends EventEmitter {
     await fs.writeFile(this.config.persistenceFile, JSON.stringify(snapshot, null, 2));
     this.stats.lastSnapshot = Date.now();
     
-    console.log(`💾 Cache snapshot saved: ${this.config.persistenceFile}`);
+    console.log(`[STORAGE] Cache snapshot saved: ${this.config.persistenceFile}`);
   }
 
   async _loadPersistentData() {
     try {
       if (!await fs.access(this.config.persistenceFile).then(() => true).catch(() => false)) {
-        console.log('📂 No existing cache snapshot found');
+        this.logger.info('No existing cache snapshot found');
         return;
       }
 
@@ -1139,7 +1147,7 @@ export class RedisLikeCache extends EventEmitter {
         console.log(`📂 Loaded cache snapshot: ${this.store.size} keys restored`);
       }
     } catch (error) {
-      console.warn('⚠️ Failed to load cache snapshot:', error.message);
+      console.warn('[WARN] Failed to load cache snapshot:', error.message);
     }
   }
 
@@ -1171,7 +1179,7 @@ export class RedisLikeCache extends EventEmitter {
   }
 
   async shutdown() {
-    console.log('🔄 Shutting down Redis-like Cache...');
+    console.log('[PROCESS] Shutting down Redis-like Cache...');
     
     // Clear timers
     if (this.expirationTimer) clearInterval(this.expirationTimer);
@@ -1183,7 +1191,7 @@ export class RedisLikeCache extends EventEmitter {
       try {
         await this._saveSnapshot();
       } catch (error) {
-        console.error('❌ Failed to save final snapshot:', error.message);
+        console.error('[ERROR] Failed to save final snapshot:', error.message);
       }
     }
 
@@ -1197,7 +1205,7 @@ export class RedisLikeCache extends EventEmitter {
     this.hashes.clear();
     this.sortedSets.clear();
     
-    console.log('✅ Redis-like Cache shutdown complete');
+    this.logger.success('Redis-like Cache shutdown complete');
   }
 }
 

@@ -9,6 +9,15 @@ export class AuthManager extends EventEmitter {
   constructor(config = {}) {
     super();
     
+    // Logger setup (fallback to default if not provided)
+    this.logger = config.logger || {
+      info: (...args) => console.log('[INFO] [AUTH]', ...args),
+      warn: (...args) => console.warn('[WARN] [AUTH]', ...args),
+      error: (...args) => console.error('[ERROR] [AUTH]', ...args),
+      success: (...args) => console.log('[SUCCESS] [AUTH]', ...args),
+      debug: (...args) => console.log('[DEBUG] [AUTH]', ...args)
+    };
+    
     this.config = {
       sessionTimeout: config.sessionTimeout || 1800000, // 30 minutes
       maxLoginAttempts: config.maxLoginAttempts || 5,
@@ -40,9 +49,9 @@ export class AuthManager extends EventEmitter {
       this.isInitialized = true;
       this.emit('initialized');
       
-      console.log('✅ Authentication system initialized');
+      this.logger.success('Authentication system initialized');
     } catch (error) {
-      console.error('❌ Failed to initialize authentication system:', error);
+      console.error('[ERROR] Failed to initialize authentication system:', error);
       throw error;
     }
   }

@@ -66,7 +66,7 @@ export class MonitoringEngine extends EventEmitter {
   async init() {
     if (this.isInitialized) return;
 
-    console.log('📊 Initializing Advanced Monitoring System...');
+    console.log('[MONITOR] Initializing Advanced Monitoring System...');
 
     try {
       // Initialize alerting system
@@ -86,7 +86,7 @@ export class MonitoringEngine extends EventEmitter {
       this._setupMetricRetention();
 
       this.isInitialized = true;
-      console.log('✅ Advanced Monitoring System initialized');
+      console.log('[SUCCESS] Advanced Monitoring System initialized');
 
       this.emit('monitoringStarted', {
         enabled: this.config.enabled,
@@ -95,7 +95,7 @@ export class MonitoringEngine extends EventEmitter {
       });
 
     } catch (error) {
-      console.error('❌ Failed to initialize monitoring:', error.message);
+      console.error('[ERROR] Failed to initialize monitoring:', error.message);
       throw error;
     }
   }
@@ -476,7 +476,7 @@ export class MonitoringEngine extends EventEmitter {
         //   html: this._generateEmailTemplate(alert)
         // });
       } catch (error) {
-        console.error('❌ Failed to send email alert:', error.message);
+        console.error('[ERROR] Failed to send email alert:', error.message);
       }
     }
 
@@ -500,7 +500,7 @@ export class MonitoringEngine extends EventEmitter {
         // Send to Slack webhook (requires implementation)
         console.log('📱 Slack notification:', payload);
       } catch (error) {
-        console.error('❌ Failed to send Slack alert:', error.message);
+        console.error('[ERROR] Failed to send Slack alert:', error.message);
       }
     }
   }
@@ -720,7 +720,7 @@ export class MonitoringEngine extends EventEmitter {
     }
     this.timers.clear();
 
-    console.log('📊 Monitoring engine shutdown complete');
+    console.log('[MONITOR] Monitoring engine shutdown complete');
   }
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "bigbasealpha",
-  "version": "1.5.0",
-  "description": "Enterprise-Grade NoSQL Database System with Offline HSM Security - Complete database platform with encryption, caching, indexing, JWT authentication, auto-generated REST API, real-time dashboard, and master-slave replication",
+  "version": "1.5.1",
+  "description": "Enterprise-Grade NoSQL Database System with Modular Logger & Offline HSM Security - Complete database platform with professional text-based logging, encryption, caching, indexing, JWT authentication, auto-generated REST API, real-time dashboard, and master-slave replication",
   "type": "module",
   "main": "src/alpha.js",
   "author": "ByAlphas",
@@ -67,6 +67,7 @@
     "lightweight",
     "professional",
     "enterprise",
+    "modular-logger",
     "bigbase",
     "alpha",
     "redis-compatible",

@@ -21,6 +21,15 @@ class OfflineHSM extends EventEmitter {
     constructor(options = {}) {
         super();
         
+        // Logger support for v1.5.1
+        this.logger = options.logger || {
+            success: (msg) => console.log(`[SUCCESS] [HSM] ${msg}`),
+            info: (msg) => console.log(`[INFO] [HSM] ${msg}`),
+            warn: (msg) => console.log(`[WARN] [HSM] ${msg}`),
+            error: (msg) => console.log(`[ERROR] [HSM] ${msg}`),
+            process: (msg) => console.log(`[PROCESS] [HSM] ${msg}`)
+        };
+        
         this.config = {
             keySize: options.keySize || 256,
             algorithm: options.algorithm || 'aes-256-gcm',
@@ -68,7 +77,7 @@ class OfflineHSM extends EventEmitter {
             this.isInitialized = true;
             this.emit('hsm:initialized');
             
-            console.log('🔐 BigBaseAlpha HSM initialized successfully (Offline Mode)');
+            this.logger.success('BigBaseAlpha HSM initialized successfully (Offline Mode)');
         } catch (error) {
             this.emit('hsm:error', error);
             throw new Error(`HSM initialization failed: ${error.message}`);
@@ -558,7 +567,7 @@ class OfflineHSM extends EventEmitter {
         this.isInitialized = false;
         this.emit('hsm:shutdown_complete');
         
-        console.log('🔐 BigBaseAlpha HSM shutdown complete');
+        this.logger.success('BigBaseAlpha HSM shutdown complete');
     }
 }
 

@@ -62,7 +62,7 @@ export class MLEngine extends EventEmitter {
       this._startTrainingProcessor();
       
       this.isInitialized = true;
-      console.log('✅ Machine Learning Engine initialized');
+      console.log('[SUCCESS] Machine Learning Engine initialized');
       this.emit('initialized');
 
     } catch (error) {
@@ -761,7 +761,7 @@ export class MLEngine extends EventEmitter {
    * Close ML Engine
    */
   async close() {
-    console.log('✅ Machine Learning Engine closed');
+    console.log('[SUCCESS] Machine Learning Engine closed');
   }
 }
 

@@ -9,6 +9,14 @@ export class AnalyticsEngine extends EventEmitter {
   constructor(config = {}) {
     super();
     
+    this.logger = config.logger || {
+      info: (...args) => console.log(...args),
+      success: (...args) => console.log(...args),
+      warn: (...args) => console.warn(...args),
+      error: (...args) => console.error(...args),
+      debug: (...args) => console.log(...args)
+    };
+    
     this.config = {
       enableRealTimeAnalytics: config.enableRealTimeAnalytics !== false,
       enablePredictiveAnalytics: config.enablePredictiveAnalytics !== false,
@@ -80,7 +88,7 @@ export class AnalyticsEngine extends EventEmitter {
       this._startBatchProcessing();
       
       this.isInitialized = true;
-      console.log('✅ Analytics Engine initialized');
+      this.logger.success('Analytics Engine initialized');
       this.emit('initialized');
 
     } catch (error) {
@@ -555,15 +563,15 @@ export class AnalyticsEngine extends EventEmitter {
    * Process batch analytics
    */
   async _processBatchAnalytics() {
-    console.log('🔄 Processing batch analytics...');
+    console.log('[PROCESS] Processing batch analytics...');
     
     for (const [processorId, processor] of this.processors) {
       if (processor.enabled && processor.schedule !== 'realtime') {
         try {
           await processor.process();
-          console.log(`✅ Processed ${processor.name}`);
+          console.log(`[SUCCESS] Processed ${processor.name}`);
         } catch (error) {
-          console.error(`❌ Batch analytics error (${processorId}):`, error);
+          console.error(`[ERROR] Batch analytics error (${processorId}):`, error);
         }
       }
     }
@@ -743,7 +751,7 @@ export class AnalyticsEngine extends EventEmitter {
     this.kpis.set(kpi.id, kpi);
     this.stats.kpisTracked++;
     
-    console.log(`📊 KPI created: ${kpi.name} (${kpi.id})`);
+    console.log(`[ANALYTICS] KPI created: ${kpi.name} (${kpi.id})`);
     this.emit('kpiCreated', kpi);
     
     return kpi;
@@ -888,7 +896,7 @@ export class AnalyticsEngine extends EventEmitter {
 
     this.dashboards.set(dashboard.id, dashboard);
     
-    console.log(`📈 Dashboard created: ${dashboard.name} (${dashboard.id})`);
+    console.log(`[CHART] Dashboard created: ${dashboard.name} (${dashboard.id})`);
     this.emit('dashboardCreated', dashboard);
     
     return dashboard;
@@ -900,7 +908,7 @@ export class AnalyticsEngine extends EventEmitter {
   async performDataMining(collection, options = {}) {
     const startTime = Date.now();
     
-    console.log(`⛏️ Starting data mining analysis on collection: ${collection}...`);
+    console.log(`[MINING] Starting data mining analysis on collection: ${collection}...`);
 
     const analysis = {
       id: this.generateId('mining'),
@@ -944,7 +952,7 @@ export class AnalyticsEngine extends EventEmitter {
       this.dataMiningResults.set(analysis.id, analysis);
       this.stats.dataSetsAnalyzed++;
 
-      console.log(`✅ Data mining completed: ${analysis.patterns.length} patterns, ${analysis.anomalies.length} anomalies found`);
+      console.log(`[SUCCESS] Data mining completed: ${analysis.patterns.length} patterns, ${analysis.anomalies.length} anomalies found`);
       this.emit('dataMiningCompleted', analysis);
 
       return analysis;
@@ -954,7 +962,7 @@ export class AnalyticsEngine extends EventEmitter {
       analysis.error = error.message;
       analysis.failedAt = Date.now();
       
-      console.error('❌ Data mining failed:', error);
+      console.error('[ERROR] Data mining failed:', error);
       this.emit('dataMiningFailed', analysis);
       
       throw error;
@@ -1427,7 +1435,7 @@ export class AnalyticsEngine extends EventEmitter {
     this.stats.insightsGenerated++;
 
     this.emit('insightGenerated', insight);
-    console.log(`💡 Insight generated: ${insight.message}`);
+    console.log(`[INFO] Insight generated: ${insight.message}`);
   }
 
   /**
@@ -1436,7 +1444,7 @@ export class AnalyticsEngine extends EventEmitter {
   async generateBIReport(reportConfig) {
     const startTime = Date.now();
     
-    console.log(`📋 Generating BI report: ${reportConfig.name}...`);
+    console.log(`[REPORT] Generating BI report: ${reportConfig.name}...`);
 
     const report = {
       id: reportConfig.id || this.generateId('bi_report'),
@@ -1478,7 +1486,7 @@ export class AnalyticsEngine extends EventEmitter {
       this.reports.set(report.id, report);
       this.stats.reportsGenerated++;
 
-      console.log(`✅ BI report generated: ${report.name} (${report.executionTime}ms)`);
+      console.log(`[SUCCESS] BI report generated: ${report.name} (${report.executionTime}ms)`);
       this.emit('biReportGenerated', report);
 
       return report;
@@ -1488,7 +1496,7 @@ export class AnalyticsEngine extends EventEmitter {
       report.error = error.message;
       report.failedAt = Date.now();
       
-      console.error(`❌ BI report generation failed: ${report.name}`, error);
+      console.error(`[ERROR] BI report generation failed: ${report.name}`, error);
       this.emit('biReportFailed', report);
       
       throw error;
@@ -1701,7 +1709,7 @@ export class AnalyticsEngine extends EventEmitter {
    * Close analytics engine
    */
   async close() {
-    console.log('✅ Analytics Engine closed');
+    console.log('[SUCCESS] Analytics Engine closed');
   }
 }
 

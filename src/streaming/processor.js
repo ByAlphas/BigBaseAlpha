@@ -900,7 +900,7 @@ export class StreamProcessor extends EventEmitter {
    */
   setDatabase(database) {
     this.database = database;
-    console.log('🔗 Stream Processor linked to database');
+    console.log('[LINK] Stream Processor linked to database');
   }
 }
 

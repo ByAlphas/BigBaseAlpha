@@ -8,6 +8,15 @@ import { existsSync, mkdirSync } from 'fs';
 
 export class SearchEngine {
   constructor(config = {}) {
+    // Logger setup (fallback to default if not provided)
+    this.logger = config.logger || {
+      info: (...args) => console.log('[INFO] [SEARCH]', ...args),
+      warn: (...args) => console.warn('[WARN] [SEARCH]', ...args),
+      error: (...args) => console.error('[ERROR] [SEARCH]', ...args),
+      success: (...args) => console.log('[SUCCESS] [SEARCH]', ...args),
+      debug: (...args) => console.log('[DEBUG] [SEARCH]', ...args)
+    };
+    
     this.config = {
       path: config.path || './search_indexes',
       minWordLength: config.minWordLength || 2,
@@ -34,7 +43,7 @@ export class SearchEngine {
       await this._loadIndexes();
       
       this.isInitialized = true;
-      console.log('✅ Search Engine initialized');
+      this.logger.success('Search Engine initialized');
     } catch (error) {
       throw new Error(`Failed to initialize Search Engine: ${error.message}`);
     }

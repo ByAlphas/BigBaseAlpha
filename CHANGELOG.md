@@ -1,5 +1,53 @@
 # Changelog
 
+## [1.5.1] - 2025-08-06
+### Added - Modular Logger System
+- **Enterprise Text-Based Logging**: Professional logging system replacing emoji-based logs
+  - Text-based log levels: [INFO], [SUCCESS], [WARN], [ERROR], [DEBUG], [PROCESS]
+  - Full compatibility with enterprise environments and CI/CD systems
+  - Improved readability for log files and terminal output
+  - Professional timestamp formatting with ISO 8601 standard
+- **Fully Customizable Color Schemes**: Advanced color support using colors package
+  - 256-color terminal support with professional color presets
+  - Customizable color schemes for corporate branding
+  - Runtime color configuration without restart required
+  - Color disable option for file logging and low-color environments
+- **Multiple Output Formats**: Flexible logging formats for different use cases
+  - Text format (default): Professional enterprise logging with timestamps
+  - Emoji format (legacy): Maintains backward compatibility with pre-v1.5.1
+  - Minimal format: Compact symbols for resource-constrained environments
+  - JSON format: Structured logging for ELK stack and log aggregation systems
+- **Runtime Configuration Management**: Dynamic logger changes without system restart
+  - setLoggerFormat(): Switch between text, emoji, minimal, JSON formats
+  - setLoggerPreset(): Apply enterprise, legacy, minimal, debug, silent presets
+  - setLoggerColors(): Enable/disable colors dynamically
+  - setLoggerColorScheme(): Update color schemes on the fly
+- **Professional Enterprise Presets**: Pre-configured setups for different environments
+  - Enterprise (default): Professional text-based logging with colors and timestamps
+  - Legacy: Maintains emoji compatibility for existing deployments
+  - Minimal: Compact output for production and resource-constrained systems
+  - JSON: Structured output for Elasticsearch, Splunk, and log aggregation
+  - Debug: Detailed logging for development and troubleshooting
+  - Silent: No output for embedded systems and SDK usage
+- **Manual Logging API**: Direct access to logging functions
+  - db.log.info(), db.log.success(), db.log.warn(), db.log.error()
+  - db.log.debug(), db.log.process() for different log levels
+  - Child logger creation for modular applications
+  - Inherited configuration with override capability
+- **Quick Preset Switchers**: Convenience methods for common configurations
+  - enableTextLogging(), enableEmojiLogging(), enableMinimalLogging()
+  - enableJSONLogging(), enableDebugLogging(), enableSilentLogging()
+  - One-method preset changes for rapid environment switching
+
+### Changed
+- **Default Logging Format**: Changed from emoji-based to professional text-based logging
+- **Log Message Format**: Improved consistency and readability across all modules
+- **Color Scheme**: Enhanced color support with professional enterprise defaults
+
+### Fixed
+- **Emoji Compatibility Issues**: Resolved emoji display problems in various terminal environments
+- **Log Format Consistency**: Standardized log message formatting across all system components
+
 ## [1.5.0] - 2025-08-05
 ### Added - Enterprise Authentication & API Features
 - **JWT Authentication & User Management**: Complete authentication system with role-based access control

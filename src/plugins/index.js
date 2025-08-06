@@ -241,7 +241,7 @@ export class PluginManager extends EventEmitter {
           description: 'Core logging plugin',
           
           async onInit(db) {
-            if (!db.silent) (db.logger || console).log('🚀 BigBaseAlpha database initialized');
+            if (!db.silent) (db.logger || console).log('[STARTUP] BigBaseAlpha database initialized');
           },
           
           async onWrite(collection, data, db) {
@@ -249,11 +249,11 @@ export class PluginManager extends EventEmitter {
           },
           
           async onDelete(collection, id, db) {
-            if (db && !db.silent) (db.logger || console).log(`🗑️  Document deleted from collection: ${collection}, ID: ${id}`);
+            if (db && !db.silent) (db.logger || console).log(`[DELETE]  Document deleted from collection: ${collection}, ID: ${id}`);
           },
           
           async onBackup(path, db) {
-            if (db && !db.silent) (db.logger || console).log(`💾 Database backup created: ${path}`);
+            if (db && !db.silent) (db.logger || console).log(`[BACKUP] Database backup created: ${path}`);
           }
         }
       },
@@ -271,7 +271,7 @@ export class PluginManager extends EventEmitter {
           
           async onInit(db) {
             this.stats.startTime = Date.now();
-            console.log('📊 Performance monitoring started');
+            console.log('[MONITOR] Performance monitoring started');
           },
           
           async onWrite() {

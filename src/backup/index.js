@@ -11,8 +11,16 @@ import { Readable } from 'stream';
  * Handles automated backups, restoration, and data export/import
  */
 export class BackupManager extends EventEmitter {
-  constructor(config = {}) {
+  constructor(config = {}, logger = null) {
     super();
+    
+    this.logger = config.logger || logger || {
+      info: (...args) => console.log(...args),
+      success: (...args) => console.log(...args),
+      warn: (...args) => console.warn(...args),
+      error: (...args) => console.error(...args),
+      debug: (...args) => console.log(...args)
+    };
     
     this.config = {
       backupDir: config.backupDir || './backups',
@@ -48,9 +56,9 @@ export class BackupManager extends EventEmitter {
       this.isInitialized = true;
       this.emit('initialized');
       
-      console.log('✅ Backup system initialized');
+      this.logger.success('Backup system initialized');
     } catch (error) {
-      console.error('❌ Failed to initialize backup system:', error);
+      console.error('[ERROR] Failed to initialize backup system:', error);
       throw error;
     }
   }
@@ -269,7 +277,7 @@ export class BackupManager extends EventEmitter {
     try {
       // Check if database is still initialized before attempting backup
       if (!this.database || !this.database.isInitialized) {
-        console.log('⏭️ Skipping auto backup - database not initialized');
+        console.log('[SKIP] Skipping auto backup - database not initialized');
         return;
       }
       

@@ -27,6 +27,7 @@ import { CacheManager } from './caching/index.js';
 import { PluginManager } from './plugins/index.js';
 import { AuditLogger } from './utils/audit.js';
 import { ConfigManager } from './utils/config.js';
+import { ModularLogger, LoggerPresets } from './utils/logger.js';
 import { AuthManager } from './security/auth.js';
 import { OfflineHSM } from './security/hsm.js';
 import { BackupManager } from './backup/index.js';
@@ -66,9 +67,39 @@ const __dirname = dirname(__filename);
 export class BigBaseAlpha extends EventEmitter {
   constructor(options = {}) {
     super();
-    // Central log control
-    this.silent = options.silent || false;
-    this.logger = options.logger || console;
+    
+    // =============================================================================
+    // v1.5.1 MODULAR LOGGING SYSTEM INITIALIZATION
+    // =============================================================================
+    
+    // Initialize logger with user preferences or enterprise defaults
+    const loggerConfig = options.logger || {};
+    const loggerPreset = loggerConfig.preset || 'enterprise';
+    
+    // Apply preset configuration
+    let loggerOptions = {};
+    if (LoggerPresets[loggerPreset]) {
+      loggerOptions = { ...LoggerPresets[loggerPreset] };
+    }
+    
+    // Override with user-specific settings
+    loggerOptions = {
+      ...loggerOptions,
+      silent: options.silent || false,
+      prefix: loggerConfig.prefix || 'BigBaseAlpha',
+      ...loggerConfig
+    };
+    
+    // Create modular logger instance
+    this.logger = new ModularLogger(loggerOptions);
+    
+    // Maintain backward compatibility
+    this.silent = loggerOptions.silent;
+    
+    // =============================================================================
+    // CONFIGURATION SETUP
+    // =============================================================================
+    
     // Default configuration with modular control
     this.config = {
       path: options.path || './bigbase_data',
@@ -85,7 +116,16 @@ export class BigBaseAlpha extends EventEmitter {
       silent: this.silent,
       logger: this.logger,
       
-      // 🔧 Modular Features (Default: Disabled for Clean Installation)
+      // v1.5.1 Logger Configuration
+      logging: {
+        format: loggerOptions.format,
+        colors: loggerOptions.colors,
+        timestamp: loggerOptions.timestamp,
+        colorScheme: loggerOptions.colorScheme,
+        ...loggerConfig
+      },
+      
+      // Modular Features (Default: Disabled for Clean Installation)
       modules: {
         // Core features (always enabled)
         authentication: options.modules?.authentication !== false,
@@ -113,27 +153,27 @@ export class BigBaseAlpha extends EventEmitter {
     // Initialize managers
     this.configManager = new ConfigManager(this.config);
     this.storage = new StorageEngine(this.config);
-    this.security = new SecurityManager(this.config);
+    this.security = new SecurityManager({ ...this.config, logger: this.logger });
     this.indexing = new IndexManager(this.config);
     this.cache = new CacheManager(this.config);
     this.plugins = new PluginManager(this.config);
     this.audit = new AuditLogger(this.config);
-    this.auth = new AuthManager(this.config);
-    this.backupManager = new BackupManager(this.config);
-    this.searchEngine = new SearchEngine(this.config);
-    this.queryProfiler = new QueryProfiler(this.config);
-    this.etlEngine = new ETLEngine(this.config);
-    this.streamingEngine = new StreamingEngine(this.config);
-    this.analyticsEngine = new AnalyticsEngine(this.config);
+    this.auth = new AuthManager({ ...this.config, logger: this.logger });
+    this.backupManager = new BackupManager({ ...this.config, logger: this.logger });
+    this.searchEngine = new SearchEngine({ ...this.config, logger: this.logger });
+    this.queryProfiler = new QueryProfiler({ ...this.config, logger: this.logger });
+    this.etlEngine = new ETLEngine({ ...this.config, logger: this.logger });
+    this.streamingEngine = new StreamingEngine({ ...this.config, logger: this.logger });
+    this.analyticsEngine = new AnalyticsEngine({ ...this.config, logger: this.logger });
     
-    // 🔧 Conditional Module Initialization (Only if enabled)
+    // Conditional Module Initialization (Only if enabled)
     this.apiGateway = this.config.modules.apiGateway ? new APIGateway(this.config) : null;
     this.mlEngine = this.config.modules.machineLearning ? new MLEngine(this.config) : null;
     this.replicationEngine = this.config.modules.replication ? new ReplicationEngine(this.config) : null;
     this.monitoringEngine = this.config.modules.monitoring ? new MonitoringEngine(this.config) : null;
     this.databaseConnectors = this.config.modules.databaseConnectors ? new DatabaseConnectors(this.config) : null;
     this.graphqlEngine = this.config.modules.graphql ? new GraphQLEngine(this.config) : null;
-    this.redisCache = new RedisLikeCache(this.config);
+    this.redisCache = new RedisLikeCache({ ...this.config, logger: this.logger });
     this.eventSourcing = this.config.modules.eventSourcing ? new EventSourcingEngine(this.config) : null;
     this.blockchain = this.config.modules.blockchain ? new BlockchainEngine(this.config) : null;
     this.streamProcessor = this.config.modules.streamProcessor ? new StreamProcessor(this.config) : null;
@@ -145,7 +185,8 @@ export class BigBaseAlpha extends EventEmitter {
       algorithm: 'aes-256-gcm',
       tamperDetection: true,
       autoBackup: true,
-      maxKeyAge: 7776000000 // 90 days
+      maxKeyAge: 7776000000, // 90 days
+      logger: this.logger // v1.5.1 logger integration
     });
 
     // Initialize Terminal UI and Performance Analytics
@@ -165,7 +206,8 @@ export class BigBaseAlpha extends EventEmitter {
     this.securitySuite = new SecurityPrivacySuite(this, {
       encryption: this.config.security?.encryption || 'AES-256-GCM',
       wipeIterations: this.config.security?.wipeIterations || 3,
-      paranoidLogging: this.config.security?.paranoidLogging !== false
+      paranoidLogging: this.config.security?.paranoidLogging !== false,
+      logger: this.logger
     });
 
     // Initialize Collection Manager and Performance Engine
@@ -268,60 +310,60 @@ export class BigBaseAlpha extends EventEmitter {
       
       await this.analyticsEngine.init();
       
-      // 🔧 Conditional Module Initialization
+      // Conditional Module Initialization
       if (this.config.modules.apiGateway && this.apiGateway) {
         await this.apiGateway.init();
-        this._logModule('✅ API Gateway initialized on port', this.apiGateway.port);
+        this._logModule('[SUCCESS] API Gateway initialized on port', this.apiGateway.port);
       }
       
       if (this.config.modules.machineLearning && this.mlEngine) {
         await this.mlEngine.init();
-        this._logModule('✅ Machine Learning Engine initialized');
+        this._logModule('[SUCCESS] Machine Learning Engine initialized');
       }
       
       if (this.config.modules.replication && this.replicationEngine) {
         await this.replicationEngine.init();
-        this._logModule('🔄 Initializing Data Replication Engine...');
+        this._logModule('[PROCESS] Initializing Data Replication Engine...');
       } else {
-        this._logModule('⚠️ Replication is disabled in configuration');
+        this._logModule('[WARN] Replication is disabled in configuration');
       }
       
       if (this.config.modules.monitoring && this.monitoringEngine) {
         await this.monitoringEngine.init();
-        this._logModule('✅ Advanced Monitoring System initialized');
+        this._logModule('[SUCCESS] Advanced Monitoring System initialized');
       } else {
-        this._logModule('📊 Initializing Advanced Monitoring System...');
+        this._logModule('[PROCESS] Initializing Advanced Monitoring System...');
       }
       
       if (this.config.modules.databaseConnectors && this.databaseConnectors) {
         await this.databaseConnectors.init();
-        this._logModule('✅ Database Connectors initialized');
+        this._logModule('[SUCCESS] Database Connectors initialized');
       } else {
-        this._logModule('⚠️ Database connectors are disabled in configuration');
+        this._logModule('[WARN] Database connectors are disabled in configuration');
       }
       
       if (this.config.modules.graphql && this.graphqlEngine) {
         await this.graphqlEngine.init();
-        this._logModule('✅ GraphQL Engine initialized');
+        this._logModule('[SUCCESS] GraphQL Engine initialized');
       } else {
-        this._logModule('⚠️ GraphQL is disabled in configuration');
+        this._logModule('[WARN] GraphQL is disabled in configuration');
       }
       
-      // Initialize v1.5.0 features
-      console.log('🔄 Initializing BigBaseAlpha v1.5.0 features...');
+      // Initialize v1.5.1 features
+      this.logger.process('Initializing BigBaseAlpha v1.5.1 features...');
       
       // Initialize Authentication Manager
       await this.authManager._initializeCollections();
-      console.log('🔒 Authentication system initialized');
+      this.logger.success('Authentication system initialized');
       
       // Initialize REST API (but don't start server yet)
-      console.log('🌐 REST API generator ready');
+      this.logger.success('REST API generator ready');
       
       // Initialize Real-time Dashboard (but don't start WebSocket yet)
-      console.log('📊 Real-time Dashboard ready');
+      this.logger.success('Real-time Dashboard ready');
       
       // Initialize Replication Manager (but don't start yet)
-      console.log('🔄 Replication Manager ready');
+      this.logger.success('Replication Manager ready');
       
       // Redis Cache - always init (lightweight)
       await this.redisCache.init();
@@ -329,13 +371,13 @@ export class BigBaseAlpha extends EventEmitter {
       // Event Sourcing - only init if enabled
       if (this.config.modules.eventSourcing && this.eventSourcing) {
         await this.eventSourcing.initialize();
-        this._logModule('✅ Event Sourcing Engine initialized');
+        this._logModule('[SUCCESS] Event Sourcing Engine initialized');
       }
       
       // Blockchain - only init if enabled
       if (this.config.modules.blockchain && this.blockchain) {
         await this.blockchain.initialize();
-        this._logModule('✅ Blockchain Engine initialized');
+        this._logModule('[SUCCESS] Blockchain Engine initialized');
       }
       
       this.backupManager.setDatabase(this);
@@ -1099,9 +1141,9 @@ export class BigBaseAlpha extends EventEmitter {
     this.isInitialized = false;
     this.emit('closed');
     
-    console.log('🔄 Closing BigBaseAlpha database...');
-    console.log('📚 Closing collection manager...');
-    console.log('✅ BigBaseAlpha database closed successfully');
+    this.logger.process('Closing BigBaseAlpha database...');
+    this.logger.process('Closing collection manager...');
+    this.logger.success('BigBaseAlpha database closed successfully');
     
     // Force process exit after a brief delay to ensure cleanup
     if (!this.config.silent) {
@@ -1288,9 +1330,9 @@ export class BigBaseAlpha extends EventEmitter {
           collection.documents.set(doc._id, doc);
           collection.metadata.totalDocuments++;
         }
-        console.log(`✅ Loaded ${collection.metadata.totalDocuments} documents from '${collectionName}'`);
+        this.logger.success(`Loaded ${collection.metadata.totalDocuments} documents from '${collectionName}'`);
       } catch (error) {
-        console.warn(`⚠️ Could not load documents from '${collectionName}':`, error.message);
+        this.logger.warn(`Could not load documents from '${collectionName}':`, error.message);
       }
       
       this.collections.set(collectionName, collection);
@@ -1357,7 +1399,7 @@ export class BigBaseAlpha extends EventEmitter {
       this.metricsTimer = null;
     }
     
-    console.log('✅ All background tasks stopped');
+    this.logger.success('All background tasks stopped');
   }
 
   async _cleanupExpiredDocuments() {
@@ -2114,7 +2156,7 @@ export class BigBaseAlpha extends EventEmitter {
   async shutdown() {
     if (!this.isInitialized) return;
 
-    console.log('🔄 Shutting down BigBaseAlpha...');
+    this.logger.process('Shutting down BigBaseAlpha...');
 
     try {
       // Stop background tasks
@@ -2139,10 +2181,10 @@ export class BigBaseAlpha extends EventEmitter {
       
       this.isInitialized = false;
       
-      console.log('✅ BigBaseAlpha shutdown complete');
+      this.logger.success('BigBaseAlpha shutdown complete');
       this.emit('shutdown');
     } catch (error) {
-      console.error('❌ Error during shutdown:', error.message);
+      this.logger.error('Error during shutdown:', error.message);
       throw error;
     }
   }
@@ -4056,9 +4098,9 @@ export class BigBaseAlpha extends EventEmitter {
   activateSelfDestruct(config = {}) {
     // SAFETY: Add warning and require explicit safety check
     if (!config.safetyCheck) {
-      console.log('⚠️  WARNING: Self-destruct mode is DESTRUCTIVE!');
-      console.log('🛡️  Add { safetyCheck: true } to activate');
-      console.log('📍 Target database:', this.config.path);
+      this.logger.warn('WARNING: Self-destruct mode is DESTRUCTIVE!');
+      this.logger.info('Add { safetyCheck: true } to activate');
+      this.logger.info('Target database:', this.config.path);
       throw new Error('Self-destruct requires safety confirmation');
     }
 
@@ -4196,10 +4238,10 @@ export class BigBaseAlpha extends EventEmitter {
   async wipe(pattern, options = {}) {
     // SAFETY: Add warning and require explicit safety check
     if (!options.safetyCheck) {
-      console.log('⚠️  WARNING: Wipe operation is DESTRUCTIVE!');
-      console.log('🛡️  Add { safetyCheck: true } to activate');
-      console.log('🎯 Pattern:', pattern);
-      console.log('📍 Target database:', this.config.path);
+      this.logger.warn('WARNING: Wipe operation is DESTRUCTIVE!');
+      this.logger.info('Add { safetyCheck: true } to activate');
+      this.logger.info('Pattern:', pattern);
+      this.logger.info('Target database:', this.config.path);
       throw new Error('Wipe requires safety confirmation');
     }
 
@@ -4298,10 +4340,10 @@ export class BigBaseAlpha extends EventEmitter {
    */
   async emergencyShutdown(options = {}) {
     // SAFETY: Add multiple warnings
-    console.log('🚨 WARNING: EMERGENCY SHUTDOWN IS EXTREMELY DESTRUCTIVE!');
-    console.log('💀 THIS WILL PERMANENTLY DESTROY ALL DATA!');
-    console.log('📍 Target database:', this.config.path);
-    console.log('🛡️  Required options: { confirm: true, safetyCheck: true, emergencyCode: "EMERGENCY_DESTROY_ALL_DATA" }');
+    this.logger.error('WARNING: EMERGENCY SHUTDOWN IS EXTREMELY DESTRUCTIVE!');
+    this.logger.error('THIS WILL PERMANENTLY DESTROY ALL DATA!');
+    this.logger.info('Target database:', this.config.path);
+    this.logger.info('Required options: { confirm: true, safetyCheck: true, emergencyCode: "EMERGENCY_DESTROY_ALL_DATA" }');
     
     if (!options.confirm || !options.safetyCheck || options.emergencyCode !== 'EMERGENCY_DESTROY_ALL_DATA') {
       throw new Error('Emergency shutdown requires all safety confirmations');
@@ -4606,19 +4648,19 @@ export class BigBaseAlpha extends EventEmitter {
    * Enhanced close method with lazy write cleanup
    */
   async close() {
-    console.log('🔄 Closing BigBaseAlpha database...');
+    this.logger.process('Closing BigBaseAlpha database...');
 
     try {
       // Flush any pending lazy write operations
       if (this.lazyWrite) {
-        console.log('💾 Flushing pending operations...');
+        this.logger.process('Flushing pending operations...');
         await this.performanceEngine.flush();
         await this.performanceEngine.destroy();
       }
 
       // Close all engines
       if (this.collectionManager) {
-        console.log('📚 Closing collection manager...');
+        this.logger.process('Closing collection manager...');
         // Collection manager cleanup if needed
       }
 
@@ -4643,19 +4685,19 @@ export class BigBaseAlpha extends EventEmitter {
         if (engine.instance && typeof engine.instance.close === 'function') {
           try {
             await engine.instance.close();
-            console.log(`✅ ${engine.name} closed successfully`);
+            console.log(`[SUCCESS] ${engine.name} closed successfully`);
           } catch (error) {
-            console.warn(`⚠️ Error closing ${engine.name}:`, error.message);
+            console.warn(`[WARN] Error closing ${engine.name}:`, error.message);
           }
         }
       }
 
       this.isInitialized = false;
       this.emit('closed');
-      console.log('✅ BigBaseAlpha database closed successfully');
+      this.logger.success('BigBaseAlpha database closed successfully');
 
     } catch (error) {
-      console.error('❌ Error during database close:', error);
+      this.logger.error('Error during database close:', error);
       throw error;
     }
   }
@@ -4671,7 +4713,7 @@ export class BigBaseAlpha extends EventEmitter {
       this.restAPI.options = { ...this.restAPI.options, ...mergedOptions };
       
       await this.restAPI.start();
-      console.log(`🌐 REST API started on port ${this.restAPI.options.port}`);
+      console.log(`[REST-API] REST API started on port ${this.restAPI.options.port}`);
       
       this.emit('restAPIStarted', { port: this.restAPI.options.port });
       return this.restAPI;
@@ -4687,7 +4729,7 @@ export class BigBaseAlpha extends EventEmitter {
   async stopRESTAPI() {
     try {
       await this.restAPI.stop();
-      console.log('🛑 REST API stopped');
+      console.log('[SHUTDOWN] REST API stopped');
       this.emit('restAPIStopped');
     } catch (error) {
       console.error('Failed to stop REST API:', error);
@@ -4704,7 +4746,7 @@ export class BigBaseAlpha extends EventEmitter {
       this.realtimeDashboard.options = { ...this.realtimeDashboard.options, ...mergedOptions };
       
       await this.realtimeDashboard.start();
-      console.log(`📊 Real-time Dashboard started on port ${this.realtimeDashboard.options.wsPort}`);
+      console.log(`[DASHBOARD] Real-time Dashboard started on port ${this.realtimeDashboard.options.wsPort}`);
       
       this.emit('dashboardStarted', { port: this.realtimeDashboard.options.wsPort });
       return this.realtimeDashboard;
@@ -4720,7 +4762,7 @@ export class BigBaseAlpha extends EventEmitter {
   async stopRealtimeDashboard() {
     try {
       await this.realtimeDashboard.stop();
-      console.log('🛑 Real-time Dashboard stopped');
+      console.log('[SHUTDOWN] Real-time Dashboard stopped');
       this.emit('dashboardStopped');
     } catch (error) {
       console.error('Failed to stop Real-time Dashboard:', error);
@@ -4737,7 +4779,7 @@ export class BigBaseAlpha extends EventEmitter {
       this.replicationManager.options = { ...this.replicationManager.options, ...mergedOptions };
       
       await this.replicationManager.start();
-      console.log(`🔄 Replication started as ${this.replicationManager.options.role}`);
+      console.log(`[REPLICATION] Replication started as ${this.replicationManager.options.role}`);
       
       this.emit('replicationStarted', { 
         role: this.replicationManager.options.role,
@@ -4756,7 +4798,7 @@ export class BigBaseAlpha extends EventEmitter {
   async stopReplication() {
     try {
       await this.replicationManager.stop();
-      console.log('🛑 Replication stopped');
+      console.log('[SHUTDOWN] Replication stopped');
       this.emit('replicationStopped');
     } catch (error) {
       console.error('Failed to stop replication:', error);
@@ -4825,7 +4867,7 @@ export class BigBaseAlpha extends EventEmitter {
         services.push('Replication');
       }
       
-      console.log(`🚀 BigBaseAlpha v1.5.0 services started: ${services.join(', ')}`);
+      console.log(`[STARTUP] BigBaseAlpha v1.5.1 services started: ${services.join(', ')}`);
       this.emit('allServicesStarted', { services });
       
       return { success: true, services };
@@ -4870,49 +4912,48 @@ export class BigBaseAlpha extends EventEmitter {
   }
 
   /**
-   * Log module status (only if not silent)
+   * Log module status using v1.5.1 Modular Logger
+   * Maintains backward compatibility while providing new features
    */
   _logModule(message, ...args) {
-    if (!this.silent) {
-      console.log(message, ...args);
-    }
+    this.logger.module(message, ...args);
   }
 
   /**
    * Stop all running services and clean up resources
    */
   async stopAllServices() {
-    this._logModule('🛑 Stopping all BigBaseAlpha services...');
+    this._logModule('[SHUTDOWN] Stopping all BigBaseAlpha services...');
     
     try {
       // Stop conditional modules only if they exist
       if (this.apiGateway) {
         await this.apiGateway.close();
-        this._logModule('✅ API Gateway closed');
+        this._logModule('[SUCCESS] API Gateway closed');
       }
       
       // Stop REST API
       if (this.restAPI) {
         await this.restAPI.stop();
-        this._logModule('✅ REST API stopped');
+        this._logModule('[SUCCESS] REST API stopped');
       }
       
       // Stop Real-time Dashboard
       if (this.realtimeDashboard) {
         await this.stopRealtimeDashboard();
-        this._logModule('✅ Real-time Dashboard stopped');
+        this._logModule('[SUCCESS] Real-time Dashboard stopped');
       }
       
       // Stop Replication
       if (this.replicationManager) {
         await this.stopReplication();
-        this._logModule('✅ Replication stopped');
+        this._logModule('[SUCCESS] Replication stopped');
       }
       
       // Stop Machine Learning Engine
       if (this.mlEngine) {
         await this.mlEngine.close();
-        this._logModule('✅ Machine Learning Engine closed');
+        this._logModule('[SUCCESS] Machine Learning Engine closed');
       }
       
       // Stop ETL Scheduler
@@ -4928,11 +4969,153 @@ export class BigBaseAlpha extends EventEmitter {
       // Close database
       await this.close();
       
-      console.log('✅ All services stopped successfully');
+      this.logger.success('All services stopped successfully');
     } catch (error) {
-      console.error('❌ Error stopping services:', error);
+      this.logger.error('Error stopping services:', error);
       throw error;
     }
+  }
+
+  // =============================================================================
+  // v1.5.1 MODULAR LOGGER API METHODS
+  // =============================================================================
+
+  /**
+   * Configure logger format on the fly
+   * @param {string} format - 'text', 'emoji', 'minimal', 'json'
+   */
+  setLoggerFormat(format) {
+    this.logger.setFormat(format);
+    this.config.logging.format = format;
+  }
+
+  /**
+   * Enable or disable colored logging
+   * @param {boolean} enabled - Whether to enable colors
+   */
+  setLoggerColors(enabled) {
+    this.logger.setColors(enabled);
+    this.config.logging.colors = enabled;
+  }
+
+  /**
+   * Update logger color scheme
+   * @param {object} colorScheme - Color scheme object
+   */
+  setLoggerColorScheme(colorScheme) {
+    this.logger.setColorScheme(colorScheme);
+    this.config.logging.colorScheme = { ...this.config.logging.colorScheme, ...colorScheme };
+  }
+
+  /**
+   * Set timestamp format
+   * @param {string} format - 'time', 'datetime', 'datetime-ms', 'date', 'iso', 'relative', 'unix', 'custom'
+   * @param {function} customFormatter - Custom formatter function for 'custom' format
+   */
+  setTimestampFormat(format, customFormatter = null) {
+    this.logger.setTimestampFormat(format, customFormatter);
+    this.config.logging.timestampFormat = format;
+    if (customFormatter) {
+      this.config.logging.customTimestampFormatter = customFormatter;
+    }
+  }
+
+  /**
+   * Enable or disable timestamps
+   */
+  setTimestamp(enabled) {
+    this.logger.setTimestamp(enabled);
+    this.config.logging.timestamp = enabled;
+  }
+
+  /**
+   * Apply a logger preset
+   * @param {string} preset - 'enterprise', 'legacy', 'minimal', 'json', 'debug', 'development', 'silent'
+   */
+  setLoggerPreset(preset) {
+    if (!LoggerPresets[preset]) {
+      throw new Error(`Unknown logger preset: ${preset}. Available presets: ${Object.keys(LoggerPresets).join(', ')}`);
+    }
+    
+    const presetConfig = LoggerPresets[preset];
+    
+    // Update logger
+    Object.keys(presetConfig).forEach(key => {
+      if (key === 'colorScheme') {
+        this.logger.setColorScheme(presetConfig[key]);
+      } else if (key === 'format') {
+        this.logger.setFormat(presetConfig[key]);
+      } else if (key === 'colors') {
+        this.logger.setColors(presetConfig[key]);
+      } else if (key === 'silent') {
+        this.logger.setSilent(presetConfig[key]);
+      } else if (key === 'timestamp') {
+        this.logger.setTimestamp(presetConfig[key]);
+      } else if (key === 'timestampFormat') {
+        this.logger.setTimestampFormat(presetConfig[key]);
+      }
+    });
+    
+    // Update config
+    this.config.logging = { ...this.config.logging, ...presetConfig };
+  }
+
+  /**
+   * Get current logger configuration
+   */
+  getLoggerConfig() {
+    return this.logger.getConfig();
+  }
+
+  /**
+   * Create a child logger with different settings
+   * @param {object} options - Logger options
+   */
+  createChildLogger(options = {}) {
+    return this.logger.createChild(options);
+  }
+
+  /**
+   * Manual logging methods for custom use
+   */
+  log = {
+    info: (message, ...args) => this.logger.info(message, ...args),
+    success: (message, ...args) => this.logger.success(message, ...args),
+    warn: (message, ...args) => this.logger.warn(message, ...args),
+    error: (message, ...args) => this.logger.error(message, ...args),
+    debug: (message, ...args) => this.logger.debug(message, ...args),
+    process: (message, ...args) => this.logger.process(message, ...args)
+  };
+
+  /**
+   * Quick logger preset switcher methods
+   */
+  enableEmojiLogging() {
+    this.setLoggerPreset('legacy');
+  }
+
+  enableTextLogging() {
+    this.setLoggerPreset('enterprise');
+  }
+
+  enableMinimalLogging() {
+    this.setLoggerPreset('minimal');
+  }
+
+  enableJSONLogging() {
+    this.setLoggerPreset('json');
+  }
+
+  enableDebugLogging() {
+    this.setLoggerPreset('debug');
+  }
+
+  enableDevelopmentLogging() {
+    this.setLoggerPreset('development');
+  }
+
+  enableSilentLogging() {
+    this.setLoggerPreset('silent');
   }
 }
 

@@ -2,16 +2,9 @@
 
 **Enterprise-Grade NoSQL Database System with Offline HSM Security**
 
-BigBaseAlph### 🔐 v1.5.0 HSM & Enterprise Features (NEW!)
-- **🔒 100% Offline HSM Integration**: Hardware Security Module with tamper detection and air-gapped operation
-- **🔑 Advanced Key Management**: Multi-algorithm support (RSA, ECDSA, AES) with secure key derivation
-- **🛡️ Hardware-Level Security**: Encrypted private key storage with automatic backup and audit logging
-- **🔐 JWT Authentication & User Management**: Complete authentication system with role-based access control
-- **🌐 Auto-Generated REST API**: Full REST API with automatic CRUD endpoints and Swagger documentation
-- **📊 Real-time Dashboard**: WebSocket-based live monitoring with real-time metrics and alerts
-- **🔄 Master-Slave Replication**: High availability with automatic failover and data synchronizationa sophisticated enterprise database system built from scratch in JavaScript. Features include encryption, caching, indexing, blockchain integration, machine learning, stream processing, and comprehensive web dashboards. **NOW WITH 100% OFFLINE HSM (Hardware Security Module) INTEGRATION FOR MAXIMUM SECURITY.**
+BigBaseAlpha is a sophisticated enterprise database system built from scratch in JavaScript. Features include encryption, caching, indexing, blockchain integration, machine learning, stream processing, and comprehensive web dashboards. **NOW WITH 100% OFFLINE HSM (Hardware Security Module) INTEGRATION FOR MAXIMUM SECURITY.**
 
-![Version](https://img.shields.io/badge/version-1.5.0-green)
+![Version](https://img.shields.io/badge/version-1.5.1-green)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Node.js](https://img.shields.io/badge/Node.js-14%2B-brightgreen)
 ![Enterprise](https://img.shields.io/badge/Enterprise-Ready-gold)
@@ -21,6 +14,7 @@ BigBaseAlph### 🔐 v1.5.0 HSM & Enterprise Features (NEW!)
 ![Replication](https://img.shields.io/badge/Master--Slave-Replication-red)
 ![HSM](https://img.shields.io/badge/HSM-Offline%20Security-critical)
 ![100% Offline](https://img.shields.io/badge/100%25-Offline%20Ready-darkgreen)
+![Logger](https://img.shields.io/badge/Logger-Modular%20v1.5.1-brightblue)
 
 ## 🔐 **100% OFFLINE SECURITY GUARANTEE**
 
@@ -33,7 +27,91 @@ BigBaseAlpha operates completely offline with no external dependencies or networ
 - ✅ **Tamper Detection**: Built-in system fingerprinting and integrity checks
 - ✅ **Air-Gapped Ready**: Perfect for isolated environments and high-security setups
 - ✅ **Zero External Dependencies**: No cloud services or external key providers needed
-# 📋 Changelog
+
+### 🔐 v1.5.1 Modular Logger System (NEW!)
+
+BigBaseAlpha v1.5.1 introduces a **completely modular, enterprise-grade logging system** that replaces emoji-based logs with professional text-based formatting for maximum compatibility and enterprise environments.
+
+#### 🎯 **Key Features:**
+- **📝 Enterprise Text Logging**: Professional [INFO], [SUCCESS], [WARN], [ERROR] format
+- **🎨 Fully Customizable Colors**: 8 built-in color schemes + custom color support
+- **⚙️ 4 Output Formats**: Text (default), Minimal, JSON, Legacy (emoji support)
+- **⏰ 9 Timestamp Formats**: Simple, DateTime, ISO, Unix, Custom, and more
+- **🔧 Runtime Configuration**: Change settings without restart via API
+- **📊 8 Professional Presets**: Enterprise, Clean, Debug, Silent, JSON, etc.
+- **🎯 100% Backwards Compatible**: Legacy emoji support available via presets
+- **🌈 256-Color Terminal Support**: Full color customization for corporate branding
+
+#### 🏢 **Professional Logger Presets:**
+```javascript
+// Enterprise (Default) - Professional text with colors
+const logger = new ModularLogger(LoggerPresets.enterprise);
+
+// Clean - No timestamps, just colored levels
+const logger = new ModularLogger(LoggerPresets.clean);
+
+// JSON - Structured logging for ELK/Splunk
+const logger = new ModularLogger(LoggerPresets.json);
+
+// Debug - Full details with milliseconds
+const logger = new ModularLogger(LoggerPresets.debug);
+
+// Silent - No output (production)
+const logger = new ModularLogger(LoggerPresets.silent);
+```
+
+#### ⚙️ **Runtime Configuration:**
+```javascript
+// Change format on the fly
+logger.setFormat('json');          // Switch to JSON format
+logger.setTimestampFormat('iso');   // ISO 8601 timestamps
+logger.setColors(false);            // Disable colors for file logs
+logger.setColorScheme({             // Custom corporate colors
+  info: 'brightCyan',
+  success: 'brightGreen',
+  error: 'brightRed'
+});
+```
+
+#### 📊 **Output Examples:**
+```bash
+# Enterprise Format (Default)
+[19:45] [SUCCESS] [BigBaseAlpha] Database initialized successfully
+[19:45] [INFO] [BigBaseAlpha] Authentication system ready
+[19:45] [WARN] [BigBaseAlpha] Replication is disabled in configuration
+
+# JSON Format (for log aggregation)
+{"timestamp":"2025-08-06T19:45:23.123Z","level":"SUCCESS","prefix":"BigBaseAlpha","message":"Database initialized"}
+
+# Minimal Format (production)
+✓ Database initialized
+I Authentication system ready
+! Replication disabled
+```
+
+### 🔐 v1.5.0 HSM & Enterprise Features
+- **� 100% Offline HSM Integration**: Hardware Security Module with tamper detection and air-gapped operation
+- **🔑 Advanced Key Management**: Multi-algorithm support (RSA, ECDSA, AES) with secure key derivation
+- **🛡️ Hardware-Level Security**: Encrypted private key storage with automatic backup and audit logging
+- **🔐 JWT Authentication & User Management**: Complete authentication system with role-based access control
+- **🌐 Auto-Generated REST API**: Full REST API with automatic CRUD endpoints and Swagger documentation
+- **📊 Real-time Dashboard**: WebSocket-based live monitoring with real-time metrics and alerts
+- **🔄 Master-Slave Replication**: High availability with automatic failover and data synchronization
+
+# �📋 Changelog
+
+## [1.5.1] - 2025-08-06
+- **🔄 MODULAR LOGGER SYSTEM**: Complete enterprise logging solution
+  - Text-based log levels ([INFO], [SUCCESS], [WARN], [ERROR], [DEBUG], [PROCESS]) replacing emojis
+  - Fully customizable color schemes using colors package with professional enterprise defaults
+  - Multiple output formats: text (default), emoji (legacy), minimal, JSON for log aggregation
+  - Runtime configuration changes without restart: setLoggerFormat(), setLoggerColors(), setLoggerPreset()
+  - Enterprise presets: enterprise (default), legacy, minimal, json, debug, silent modes
+  - Backward compatibility with legacy emoji logging via preset selection
+  - Advanced color support with 256-color terminal compatibility
+  - Child logger creation for modular applications with inherited configurations
+  - Manual logging API: db.log.info(), db.log.success(), db.log.warn(), db.log.error()
+  - Quick preset switchers: enableTextLogging(), enableEmojiLogging(), enableMinimalLogging()
 
 ## [1.5.0] - 2025-08-05
 - **🔐 OFFLINE HSM INTEGRATION**: 100% Offline Hardware Security Module implementation
@@ -370,6 +448,132 @@ await db.setTrigger("trap", "🔒", {
   }
 });
 ```
+
+## 📝 v1.5.1 Modular Logger Configuration
+
+BigBaseAlpha v1.5.1 introduces a powerful, fully customizable logging system that replaces emoji-based logs with professional text-based formats while maintaining backward compatibility.
+
+### 🎯 Quick Logger Setup
+
+```javascript
+import BigBaseAlpha from 'bigbasealpha';
+
+// Enterprise logging (default in v1.5.1)
+const db = new BigBaseAlpha({
+  logger: {
+    preset: 'enterprise'  // [INFO], [SUCCESS], [WARN], [ERROR] format
+  }
+});
+
+// Legacy emoji logging (pre-v1.5.1 compatibility)
+const dbLegacy = new BigBaseAlpha({
+  logger: {
+    preset: 'legacy'  // ✅, ⚠️, ❌ emoji format
+  }
+});
+
+// Production minimal logging
+const dbProd = new BigBaseAlpha({
+  logger: {
+    preset: 'minimal'  // ✓, !, X minimal format
+  }
+});
+
+// JSON logging for log aggregation
+const dbJSON = new BigBaseAlpha({
+  logger: {
+    preset: 'json'  // Structured JSON output
+  }
+});
+```
+
+### 🎨 Custom Color Schemes
+
+```javascript
+const db = new BigBaseAlpha({
+  logger: {
+    format: 'text',
+    colors: true,
+    colorScheme: {
+      info: 'blue',
+      success: 'brightGreen',
+      warn: 'brightYellow',
+      error: 'brightRed',
+      debug: 'magenta',
+      process: 'cyan'
+    }
+  }
+});
+
+// Custom company branding
+const dbBranded = new BigBaseAlpha({
+  logger: {
+    prefix: 'MyCompany',
+    timestamp: true,
+    colorScheme: {
+      success: 'brightBlue',  // Company blue
+      process: 'brightMagenta'
+    }
+  }
+});
+```
+
+### ⚙️ Runtime Configuration
+
+```javascript
+await db.init();
+
+// Switch logging format without restart
+db.setLoggerFormat('emoji');      // Switch to emoji
+db.setLoggerFormat('minimal');    // Switch to minimal
+db.setLoggerFormat('json');       // Switch to JSON
+
+// Quick preset changes
+db.enableTextLogging();           // [INFO] format
+db.enableEmojiLogging();          // ✅ format
+db.enableMinimalLogging();        // ✓ format
+db.enableJSONLogging();           // JSON format
+db.enableSilentLogging();         // No output
+
+// Color customization
+db.setLoggerColors(false);        // Disable colors
+db.setLoggerColorScheme({
+  warn: 'brightRed',
+  error: 'red'
+});
+
+// Apply complete preset
+db.setLoggerPreset('enterprise');
+```
+
+### 📊 Manual Logging API
+
+```javascript
+// Direct logging access
+db.log.info('Database connected successfully');
+db.log.success('Operation completed');
+db.log.warn('Configuration issue detected');
+db.log.error('Connection failed');
+db.log.debug('Debug information');
+db.log.process('Starting backup process...');
+
+// Child logger for modules
+const moduleLogger = db.createChildLogger({
+  prefix: 'MyModule',
+  colorScheme: { info: 'brightCyan' }
+});
+```
+
+### 🔧 Available Presets
+
+| Preset | Format | Use Case | Example Output |
+|--------|--------|----------|----------------|
+| `enterprise` | Text-based | Production systems | `[2025-08-06T16:07:02.006Z] [SUCCESS] [BigBaseAlpha] Database initialized` |
+| `legacy` | Emoji-based | Backward compatibility | `✅ [BigBaseAlpha] Database initialized` |
+| `minimal` | Minimal symbols | Resource-constrained | `✓ Database initialized` |
+| `json` | Structured JSON | Log aggregation | `{"timestamp":"2025-08-06T16:07:02.006Z","level":"SUCCESS","message":"Database initialized"}` |
+| `debug` | Detailed text | Development | `[2025-08-06T16:07:02.006Z] [DEBUG] [BigBaseAlpha] Detailed debug information` |
+| `silent` | No output | Silent operation | *(no output)* |
 
 ### 🎨 Terminal UI Framework (v1.3.0)
 

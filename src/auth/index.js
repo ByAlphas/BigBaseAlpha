@@ -13,6 +13,16 @@ export class AuthenticationManager extends EventEmitter {
         super();
         
         this.database = database;
+        
+        // Logger support for v1.5.1
+        this.logger = database.logger || {
+            success: (msg) => console.log(`[SUCCESS] [AUTH] ${msg}`),
+            info: (msg) => console.log(`[INFO] [AUTH] ${msg}`),
+            warn: (msg) => console.log(`[WARN] [AUTH] ${msg}`),
+            error: (msg) => console.log(`[ERROR] [AUTH] ${msg}`),
+            process: (msg) => console.log(`[PROCESS] [AUTH] ${msg}`)
+        };
+        
         this.options = {
             jwtSecret: options.jwtSecret || this._generateSecret(),
             tokenExpiry: options.tokenExpiry || '24h',
@@ -110,7 +120,7 @@ export class AuthenticationManager extends EventEmitter {
             // Initialize default roles
             await this._initializeDefaultRoles();
             
-            console.log('🔒 Authentication system initialized');
+            this.logger.success('Authentication system initialized');
             this.emit('authInitialized');
             
         } catch (error) {
@@ -325,7 +335,7 @@ export class AuthenticationManager extends EventEmitter {
         const { password: _, ...userResponse } = user;
         
         this.emit('userLoggedIn', { user: userResponse, session });
-        console.log(`🔑 User logged in: ${user.username}`);
+        this.logger.success(`User logged in: ${user.username}`);
         
         return {
             success: true,
@@ -507,7 +517,7 @@ export class AuthenticationManager extends EventEmitter {
             name
         });
         
-        console.log(`🔑 API key generated: ${name} for ${user.username}`);
+        this.logger.success(`API key generated: ${name} for ${user.username}`);
         
         return {
             success: true,

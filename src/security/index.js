@@ -13,6 +13,15 @@ export class SecurityManager {
     this.keyDerivation = config.keyDerivation || 'pbkdf2';
     this.saltRounds = config.saltRounds || 12;
     
+    // Logger support for v1.5.1
+    this.logger = config.logger || {
+      success: (msg) => console.log(`[SUCCESS] [SECURITY] ${msg}`),
+      info: (msg) => console.log(`[INFO] [SECURITY] ${msg}`),
+      warn: (msg) => console.log(`[WARN] [SECURITY] ${msg}`),
+      error: (msg) => console.log(`[ERROR] [SECURITY] ${msg}`),
+      process: (msg) => console.log(`[PROCESS] [SECURITY] ${msg}`)
+    };
+    
     // Internal state
     this.masterKey = null;
     this.encryptionKey = null;
@@ -28,17 +37,17 @@ export class SecurityManager {
         const testVerify = await bcrypt.compare('test', testHash);
         if (testVerify) {
           this.bcryptAvailable = true;
-          console.log('✅ bcrypt is working properly');
+          this.logger.success('bcrypt is working properly');
         } else {
-          console.warn('⚠️ bcrypt verification failed, using fallback');
+          this.logger.warn('bcrypt verification failed, using fallback');
           this.bcryptAvailable = false;
         }
       } else {
-        console.warn('⚠️ bcrypt not properly loaded, using fallback');
+        this.logger.warn('bcrypt not properly loaded, using fallback');
         this.bcryptAvailable = false;
       }
     } catch (error) {
-      console.warn('⚠️ bcrypt error:', error.message, ', using fallback');
+      this.logger.warn('bcrypt error:', error.message, ', using fallback');
       this.bcryptAvailable = false;
     }
   }
@@ -382,7 +391,7 @@ export class SecurityManager {
       const { writeFileSync } = await import('fs');
       writeFileSync(keyFile, this.masterKey);
       
-      console.warn('⚠️  Generated new master key. In production, use a secure key management system.');
+      this.logger.warn('Generated new master key. In production, use a secure key management system.');
     }
   }
 

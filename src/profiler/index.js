@@ -8,6 +8,14 @@ import { existsSync, mkdirSync } from 'fs';
 
 export class QueryProfiler {
   constructor(config = {}) {
+    this.logger = config.logger || {
+      info: (...args) => console.log(...args),
+      success: (...args) => console.log(...args),
+      warn: (...args) => console.warn(...args),
+      error: (...args) => console.error(...args),
+      debug: (...args) => console.log(...args)
+    };
+    
     this.config = {
       path: config.path || './query_profiles',
       enabled: config.enabled !== false,
@@ -34,7 +42,7 @@ export class QueryProfiler {
   async init() {
     try {
       if (!this.config.enabled) {
-        console.log('⚠️ Query Profiler disabled');
+        console.log('[WARN] Query Profiler disabled');
         return;
       }
 
@@ -50,7 +58,7 @@ export class QueryProfiler {
       this._startCleanup();
       
       this.isInitialized = true;
-      console.log('✅ Query Profiler initialized');
+      this.logger.success('Query Profiler initialized');
     } catch (error) {
       throw new Error(`Failed to initialize Query Profiler: ${error.message}`);
     }

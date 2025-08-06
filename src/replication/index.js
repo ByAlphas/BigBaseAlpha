@@ -60,10 +60,10 @@ export class ReplicationEngine extends EventEmitter {
   async init() {
     if (this.isInitialized) return;
 
-    console.log('🔄 Initializing Data Replication Engine...');
+    console.log('[PROCESS] Initializing Data Replication Engine...');
 
     if (!this.config.enabled) {
-      console.log('⚠️ Replication is disabled in configuration');
+      console.log('[WARN] Replication is disabled in configuration');
       return;
     }
 
@@ -87,9 +87,9 @@ export class ReplicationEngine extends EventEmitter {
         mode: this.config.mode
       });
 
-      console.log(`✅ Data Replication Engine initialized (Role: ${this.role})`);
+      console.log(`[SUCCESS] Data Replication Engine initialized (Role: ${this.role})`);
     } catch (error) {
-      console.error('❌ Failed to initialize replication:', error.message);
+      console.error('[ERROR] Failed to initialize replication:', error.message);
       throw error;
     }
   }
@@ -105,12 +105,12 @@ export class ReplicationEngine extends EventEmitter {
 
   async _initializeServer() {
     return new Promise((resolve, reject) => {
-      console.log('🌐 HTTP-based replication server would be initialized here');
-      console.log('ℹ️ WebSocket replication requires "ws" package');
+      console.log('[NETWORK] HTTP-based replication server would be initialized here');
+      console.log('[INFO] WebSocket replication requires "ws" package');
       
       // Simulate server initialization
       setTimeout(() => {
-        console.log(`🌐 Replication server simulated on port ${this.config.port}`);
+        console.log(`[NETWORK] Replication server simulated on port ${this.config.port}`);
         resolve();
       }, 100);
       
@@ -124,12 +124,12 @@ export class ReplicationEngine extends EventEmitter {
       // });
       //
       // this.server.on('listening', () => {
-      //   console.log(`🌐 Replication server listening on port ${this.config.port}`);
+      //   console.log(`[NETWORK] Replication server listening on port ${this.config.port}`);
       //   resolve();
       // });
       //
       // this.server.on('error', (error) => {
-      //   console.error('❌ Replication server error:', error.message);
+      //   console.error('[ERROR] Replication server error:', error.message);
       //   reject(error);
       // });
     });
@@ -140,7 +140,7 @@ export class ReplicationEngine extends EventEmitter {
       try {
         await this._connectToNode(nodeConfig);
       } catch (error) {
-        console.warn(`⚠️ Failed to connect to node ${nodeConfig.id}:`, error.message);
+        console.warn(`[WARN] Failed to connect to node ${nodeConfig.id}:`, error.message);
       }
     }
   }
@@ -149,8 +149,8 @@ export class ReplicationEngine extends EventEmitter {
     const nodeId = nodeConfig.id;
     const url = `http://${nodeConfig.host}:${nodeConfig.port}`;
 
-    console.log(`🔗 Would connect to replication node: ${nodeId} at ${url}`);
-    console.log('ℹ️ WebSocket connections require "ws" package');
+    console.log(`[LINK] Would connect to replication node: ${nodeId} at ${url}`);
+    console.log('[INFO] WebSocket connections require "ws" package');
 
     // Simulate connection
     const node = {
@@ -165,7 +165,7 @@ export class ReplicationEngine extends EventEmitter {
     };
 
     this.nodes.set(nodeId, node);
-    console.log(`✅ Simulated connection to replication node: ${nodeId}`);
+    console.log(`[SUCCESS] Simulated connection to replication node: ${nodeId}`);
     this.emit('nodeConnected', { nodeId, role: node.role });
 
     // const ws = new WebSocket(url);
@@ -192,7 +192,7 @@ export class ReplicationEngine extends EventEmitter {
     //     timestamp: Date.now()
     //   });
     //
-    //   console.log(`✅ Connected to replication node: ${nodeId}`);
+    //   console.log(`[SUCCESS] Connected to replication node: ${nodeId}`);
     //   this.emit('nodeConnected', { nodeId, role: node.role });
     // });
     //
@@ -210,7 +210,7 @@ export class ReplicationEngine extends EventEmitter {
     // });
     //
     // ws.on('error', (error) => {
-    //   console.error(`❌ Connection error with node ${nodeId}:`, error.message);
+    //   console.error(`[ERROR] Connection error with node ${nodeId}:`, error.message);
     //   this.metrics.networkErrors++;
     // });
   }
@@ -262,10 +262,10 @@ export class ReplicationEngine extends EventEmitter {
           this._handleConflict(senderId, message);
           break;
         default:
-          console.warn(`⚠️ Unknown message type: ${message.type}`);
+          console.warn(`[WARN] Unknown message type: ${message.type}`);
       }
     } catch (error) {
-      console.error('❌ Error handling replication message:', error.message);
+      console.error('[ERROR] Error handling replication message:', error.message);
     }
   }
 
@@ -300,7 +300,7 @@ export class ReplicationEngine extends EventEmitter {
           this._sendMessage(node.connection, message);
           this.metrics.operationsReplicated++;
         } catch (error) {
-          console.error(`❌ Failed to replicate to node ${nodeId}:`, error.message);
+          console.error(`[ERROR] Failed to replicate to node ${nodeId}:`, error.message);
         }
       }
     }
@@ -313,7 +313,7 @@ export class ReplicationEngine extends EventEmitter {
     
     // Verify checksum
     if (this._calculateChecksum(operation) !== checksum) {
-      console.error('❌ Checksum mismatch in replicated operation');
+      console.error('[ERROR] Checksum mismatch in replicated operation');
       this.metrics.conflicts++;
       return;
     }
@@ -329,7 +329,7 @@ export class ReplicationEngine extends EventEmitter {
         status: 'success'
       });
     } catch (error) {
-      console.error('❌ Failed to apply replicated operation:', error.message);
+      console.error('[ERROR] Failed to apply replicated operation:', error.message);
       
       this._sendMessage(this.nodes.get(senderId)?.connection, {
         type: 'ack',
@@ -427,7 +427,7 @@ export class ReplicationEngine extends EventEmitter {
       this.metrics.avgSyncTime = Date.now() - startTime;
       this.metrics.syncOperations++;
     } catch (error) {
-      console.error('❌ Sync operation failed:', error.message);
+      console.error('[ERROR] Sync operation failed:', error.message);
     } finally {
       this.state.syncInProgress = false;
     }
@@ -449,7 +449,7 @@ export class ReplicationEngine extends EventEmitter {
     if (this.state.electionInProgress) return;
 
     this.state.electionInProgress = true;
-    console.log('🗳️ Starting master election...');
+    console.log('[ELECTION] Starting master election...');
 
     const election = {
       type: 'election',
@@ -502,7 +502,7 @@ export class ReplicationEngine extends EventEmitter {
   _becomeSlave(masterId) {
     this.role = 'slave';
     this.masterId = masterId;
-    console.log(`🔗 Became slave to master: ${masterId}`);
+    console.log(`[LINK] Became slave to master: ${masterId}`);
     this.emit('roleChanged', { role: 'slave', masterId });
   }
 
@@ -611,7 +611,7 @@ export class ReplicationEngine extends EventEmitter {
     }
 
     this.state.isActive = false;
-    console.log('🔄 Replication engine shutdown complete');
+    console.log('[PROCESS] Replication engine shutdown complete');
   }
 }
 

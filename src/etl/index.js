@@ -13,6 +13,16 @@ export class ETLEngine extends EventEmitter {
   constructor(config) {
     super();
     
+    // Logger setup (fallback to default if not provided)
+    this.logger = config.logger || {
+      info: (...args) => console.log('[INFO] [ETL]', ...args),
+      warn: (...args) => console.warn('[WARN] [ETL]', ...args),
+      error: (...args) => console.error('[ERROR] [ETL]', ...args),
+      success: (...args) => console.log('[SUCCESS] [ETL]', ...args),
+      debug: (...args) => console.log('[DEBUG] [ETL]', ...args),
+      process: (...args) => console.log('[PROCESS] [ETL]', ...args)
+    };
+    
     this.config = config;
     this.basePath = config.path || './bigbase_data';
     this.pipelinesPath = join(this.basePath, 'pipelines');
@@ -60,11 +70,11 @@ export class ETLEngine extends EventEmitter {
       // Start scheduler
       this._startScheduler();
       
-      console.log('✅ ETL Engine initialized');
+      this.logger.success('ETL Engine initialized');
       this.emit('initialized');
       
     } catch (error) {
-      console.error('❌ ETL Engine initialization failed:', error);
+      console.error('[ERROR] ETL Engine initialization failed:', error);
       throw error;
     }
   }
@@ -144,12 +154,12 @@ export class ETLEngine extends EventEmitter {
       const extractedData = await this._extractData(pipeline.source);
       
       // Transform data
-      console.log(`🔄 Transforming data with ${pipeline.transformations.length} transformations`);
+      console.log(`[PROCESS] Transforming data with ${pipeline.transformations.length} transformations`);
       const transformedData = await this._transformData(extractedData, pipeline.transformations);
       
       // Validate data
       if (pipeline.validations.length > 0) {
-        console.log(`✅ Validating data with ${pipeline.validations.length} validators`);
+        console.log(`[SUCCESS] Validating data with ${pipeline.validations.length} validators`);
         await this._validateData(transformedData, pipeline.validations);
       }
       
@@ -174,7 +184,7 @@ export class ETLEngine extends EventEmitter {
       this.stats.successfulJobs++;
       this.stats.totalRowsProcessed += execution.rowsProcessed;
 
-      console.log(`✅ Pipeline '${pipeline.name}' completed successfully`);
+      console.log(`[SUCCESS] Pipeline '${pipeline.name}' completed successfully`);
       console.log(`   Processed ${execution.rowsProcessed} rows in ${execution.endTime - execution.startTime}ms`);
 
     } catch (error) {
@@ -192,7 +202,7 @@ export class ETLEngine extends EventEmitter {
       this.stats.totalJobs++;
       this.stats.failedJobs++;
 
-      console.error(`❌ Pipeline '${pipeline.name}' failed:`, error.message);
+      console.error(`[ERROR] Pipeline '${pipeline.name}' failed:`, error.message);
       this.emit('pipelineError', { execution, error });
 
     } finally {
@@ -630,7 +640,7 @@ export class ETLEngine extends EventEmitter {
     // Cancel active pipelines
     this.activePipelines.clear();
 
-    console.log('✅ ETL Engine closed');
+    console.log('[SUCCESS] ETL Engine closed');
   }
 
   // Private helper methods
@@ -686,7 +696,7 @@ export class ETLEngine extends EventEmitter {
 
   _startScheduler() {
     // Scheduler is already handled by individual pipeline scheduling
-    console.log('📅 ETL Scheduler started');
+    this.logger.info('ETL Scheduler started');
   }
 
   _initializeBuiltInComponents() {
@@ -701,7 +711,7 @@ export class ETLEngine extends EventEmitter {
    * Shutdown ETL Engine
    */
   async shutdown() {
-    console.log('🔄 Shutting down ETL Engine...');
+    console.log('[PROCESS] Shutting down ETL Engine...');
     
     // Stop all active pipelines
     for (const [id, pipeline] of this.activePipelines) {
@@ -728,7 +738,7 @@ export class ETLEngine extends EventEmitter {
     this.extractors.clear();
     this.loaders.clear();
     
-    console.log('✅ ETL Engine shutdown complete');
+    console.log('[SUCCESS] ETL Engine shutdown complete');
   }
 }
 

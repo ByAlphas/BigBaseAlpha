@@ -10,6 +10,15 @@ export class StreamingEngine extends EventEmitter {
   constructor(config = {}) {
     super();
     
+    // Logger setup (fallback to default if not provided)
+    this.logger = config.logger || {
+      info: (...args) => console.log('[INFO] [STREAMING]', ...args),
+      warn: (...args) => console.warn('[WARN] [STREAMING]', ...args),
+      error: (...args) => console.error('[ERROR] [STREAMING]', ...args),
+      success: (...args) => console.log('[SUCCESS] [STREAMING]', ...args),
+      debug: (...args) => console.log('[DEBUG] [STREAMING]', ...args)
+    };
+    
     this.config = {
       port: config.streamingPort || 8080,
       maxConnections: config.maxConnections || 1000,
@@ -76,7 +85,7 @@ export class StreamingEngine extends EventEmitter {
       this._startEventProcessor();
 
       this.isInitialized = true;
-      console.log(`✅ Streaming Engine initialized on port ${this.config.port}`);
+      this.logger.success(`Streaming Engine initialized on port ${this.config.port}`);
       this.emit('initialized');
 
     } catch (error) {
@@ -122,7 +131,7 @@ export class StreamingEngine extends EventEmitter {
     this.stats.totalConnections++;
     this.stats.activeConnections++;
 
-    console.log(`🔗 New WebSocket connection: ${connectionId} from ${clientIP}`);
+    console.log(`[WEBSOCKET] New WebSocket connection: ${connectionId} from ${clientIP}`);
 
     // Setup message handler
     ws.on('message', (data) => {
@@ -251,7 +260,7 @@ export class StreamingEngine extends EventEmitter {
       this._startStatsCollection();
       this._startEventProcessor();
       this.isInitialized = true;
-      console.log(`✅ Streaming Engine initialized on port ${this.config.port}`);
+      console.log(`[SUCCESS] Streaming Engine initialized on port ${this.config.port}`);
       this.emit('initialized');
     } catch (error) {
       console.error('Failed to initialize Streaming Engine:', error);
@@ -657,7 +666,7 @@ export class StreamingEngine extends EventEmitter {
 
       // Close server
       this.wss.close();
-      console.log('✅ Streaming Engine closed');
+      this.logger.success('Streaming Engine closed');
     }
   }
 
@@ -665,7 +674,7 @@ export class StreamingEngine extends EventEmitter {
    * Shutdown streaming engine
    */
   async shutdown() {
-    console.log('🔄 Shutting down Streaming Engine...');
+    console.log('[SHUTDOWN] Shutting down Streaming Engine...');
     
     // Close all connections
     for (const [id, connection] of this.connections) {
@@ -686,7 +695,7 @@ export class StreamingEngine extends EventEmitter {
       this.wss.close();
     }
     
-    console.log('✅ Streaming Engine shutdown complete');
+    this.logger.success('Streaming Engine shutdown complete');
   }
 
   /**

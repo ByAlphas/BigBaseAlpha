@@ -64,14 +64,14 @@ v1.5.0 Enterprise Features demo sonuçları:
 
 ### 🚀 v1.5.0 Enterprise Commands
 
-**Yeni NPM Scripts:**
+**New NPM Scripts:**
 ```bash
 npm run api:start           # REST API server (port 3001)
 npm run dashboard:realtime  # Real-time dashboard (port 8080)
-npm run replication:master  # Master node başlat
-npm run replication:slave   # Slave node başlat
-npm run auth:demo          # Demo admin user oluştur
-npm run services:start     # Tüm v1.5.0 servislerini başlat
+npm run replication:master  # Start master node
+npm run replication:slave   # Start slave node
+npm run auth:demo          # Create demo admin user
+npm run services:start     # Start all v1.5.0 services
 npm run status             # Enhanced system status
 ```
 

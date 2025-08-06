@@ -61,10 +61,10 @@ export class GraphQLEngine extends EventEmitter {
   async init() {
     if (this.isInitialized) return;
 
-    console.log('🚀 Initializing GraphQL Engine...');
+    console.log('[STARTUP] Initializing GraphQL Engine...');
 
     if (!this.config.enabled) {
-      console.log('⚠️ GraphQL is disabled in configuration');
+      console.log('[WARN] GraphQL is disabled in configuration');
       return;
     }
 
@@ -78,7 +78,7 @@ export class GraphQLEngine extends EventEmitter {
       }
 
       this.isInitialized = true;
-      console.log(`✅ GraphQL Engine initialized on port ${this.config.port}`);
+      console.log(`[SUCCESS] GraphQL Engine initialized on port ${this.config.port}`);
 
       this.emit('graphqlInitialized', {
         port: this.config.port,
@@ -88,7 +88,7 @@ export class GraphQLEngine extends EventEmitter {
       });
 
     } catch (error) {
-      console.error('❌ Failed to initialize GraphQL Engine:', error.message);
+      console.error('[ERROR] Failed to initialize GraphQL Engine:', error.message);
       throw error;
     }
   }
@@ -99,7 +99,7 @@ export class GraphQLEngine extends EventEmitter {
     // Build dynamic schema after database is set
     if (this.isInitialized && database) {
       this._buildDynamicSchema().catch(error => {
-        console.warn('⚠️ Could not build dynamic schema:', error.message);
+        console.warn('[WARN] Could not build dynamic schema:', error.message);
       });
     }
   }
@@ -183,7 +183,7 @@ export class GraphQLEngine extends EventEmitter {
 
   async _buildDynamicSchema() {
     if (!this.database) {
-      console.log('⚠️ Database not set for GraphQL schema generation, using static schema');
+      console.log('[WARN] Database not set for GraphQL schema generation, using static schema');
       
       // Build basic Query type without collections
       this._buildQueryType([]);
@@ -217,10 +217,10 @@ export class GraphQLEngine extends EventEmitter {
         this._buildSubscriptionType(collections);
       }
 
-      console.log(`✅ GraphQL schema built with ${this.typeDefs.size} type definitions`);
+      console.log(`[SUCCESS] GraphQL schema built with ${this.typeDefs.size} type definitions`);
 
     } catch (error) {
-      console.error('❌ Failed to build GraphQL schema:', error.message);
+      console.error('[ERROR] Failed to build GraphQL schema:', error.message);
       throw error;
     }
   }
@@ -270,7 +270,7 @@ export class GraphQLEngine extends EventEmitter {
       this.typeDefs.set(collectionName, typeDef);
 
     } catch (error) {
-      console.warn(`⚠️ Failed to build type for collection ${collectionName}:`, error.message);
+      console.warn(`[WARN] Failed to build type for collection ${collectionName}:`, error.message);
     }
   }
 
@@ -564,7 +564,7 @@ export class GraphQLEngine extends EventEmitter {
         };
       }
     } catch (error) {
-      console.warn('⚠️ Could not build collection query resolvers:', error.message);
+      console.warn('[WARN] Could not build collection query resolvers:', error.message);
     }
 
     return resolvers;
@@ -650,7 +650,7 @@ export class GraphQLEngine extends EventEmitter {
         };
       }
     } catch (error) {
-      console.warn('⚠️ Could not build collection mutation resolvers:', error.message);
+      console.warn('[WARN] Could not build collection mutation resolvers:', error.message);
     }
 
     return resolvers;
@@ -680,7 +680,7 @@ export class GraphQLEngine extends EventEmitter {
         };
       }
     } catch (error) {
-      console.warn('⚠️ Could not build collection subscription resolvers:', error.message);
+      console.warn('[WARN] Could not build collection subscription resolvers:', error.message);
     }
 
     return resolvers;
@@ -966,7 +966,7 @@ export class GraphQLEngine extends EventEmitter {
 
   addCustomType(name, typeDef) {
     this.typeDefs.set(`custom_${name}`, typeDef);
-    console.log(`✅ Added custom type: ${name}`);
+    console.log(`[SUCCESS] Added custom type: ${name}`);
   }
 
   addCustomResolver(typeName, fieldName, resolver) {
@@ -975,7 +975,7 @@ export class GraphQLEngine extends EventEmitter {
     }
     
     this.customResolvers.get(typeName)[fieldName] = resolver;
-    console.log(`✅ Added custom resolver: ${typeName}.${fieldName}`);
+    console.log(`[SUCCESS] Added custom resolver: ${typeName}.${fieldName}`);
   }
 
   // Statistics and monitoring
@@ -1021,7 +1021,7 @@ export class GraphQLEngine extends EventEmitter {
     this.resolvers.clear();
     this.customResolvers.clear();
     
-    console.log('✅ GraphQL Engine shutdown complete');
+    console.log('[SUCCESS] GraphQL Engine shutdown complete');
   }
 }
 

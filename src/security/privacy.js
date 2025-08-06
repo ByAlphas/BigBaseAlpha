@@ -12,6 +12,16 @@ class SecurityPrivacySuite extends EventEmitter {
         super();
         
         this.database = database;
+        
+        // Logger setup (fallback to default if not provided)
+        this.logger = options.logger || {
+            info: (...args) => console.log('[INFO] [PRIVACY]', ...args),
+            warn: (...args) => console.warn('[WARN] [PRIVACY]', ...args),
+            error: (...args) => console.error('[ERROR] [PRIVACY]', ...args),
+            success: (...args) => console.log('[SUCCESS] [PRIVACY]', ...args),
+            debug: (...args) => console.log('[DEBUG] [PRIVACY]', ...args)
+        };
+        
         this.options = {
             encryption: 'AES-256-GCM',
             wipeIterations: 3,
@@ -60,8 +70,8 @@ class SecurityPrivacySuite extends EventEmitter {
         // SAFETY CHECK: Warn if in production-like environment
         const dbPath = this.database.config?.path || './bigbase_data';
         if (dbPath.includes('production') || dbPath.includes('prod') || dbPath === './bigbase_data') {
-            console.log('⚠️  WARNING: Self-destruct activated on production-like path!');
-            console.log('🛡️  Recommended: Use isolated test directory');
+            this.logger.warn('WARNING: Self-destruct activated on production-like path!');
+            this.logger.info('Recommended: Use isolated test directory');
         }
 
         if (this.selfDestructTimer) {
@@ -69,8 +79,8 @@ class SecurityPrivacySuite extends EventEmitter {
         }
 
         console.log(`💣 ${message} - ${timeout / 1000}s countdown`);
-        console.log(`🎯 Target: ${dbPath}`);
-        console.log(`🔧 Wipe Level: ${wipeLevel}`);
+        console.log(`[TARGET] Target: ${dbPath}`);
+        console.log(`[CONFIG] Wipe Level: ${wipeLevel}`);
         this.emit('selfDestructActivated', { timeout, wipeLevel, dbPath });
 
         this.selfDestructTimer = setTimeout(async () => {
@@ -93,7 +103,7 @@ class SecurityPrivacySuite extends EventEmitter {
         };
 
         if (secure) {
-            console.log(`🔒 Secure PIN required to abort: ${this.selfDestructConfig.pin}`);
+            console.log(`[SECURITY] Secure PIN required to abort: ${this.selfDestructConfig.pin}`);
         }
 
         return {
@@ -113,7 +123,7 @@ class SecurityPrivacySuite extends EventEmitter {
         }
 
         if (this.selfDestructConfig.secure && pin !== this.selfDestructConfig.pin) {
-            console.log('❌ Invalid PIN - Self-destruct continues');
+            console.log('[ERROR] Invalid PIN - Self-destruct continues');
             this.emit('abortFailed', { reason: 'invalid_pin' });
             return false;
         }
@@ -122,7 +132,7 @@ class SecurityPrivacySuite extends EventEmitter {
         this.selfDestructTimer = null;
         this.selfDestructConfig = null;
 
-        console.log('✅ Self-destruct sequence aborted');
+        this.logger.success('Self-destruct sequence aborted');
         this.emit('selfDestructAborted');
         return true;
     }
@@ -291,7 +301,7 @@ class SecurityPrivacySuite extends EventEmitter {
             this.deadMansTimer = null;
         }
         this.deadMansConfig = null;
-        console.log('🛡️ Dead Man\'s Switch disabled');
+        console.log('[SHIELD] Dead Man\'s Switch disabled');
     }
 
     /**
@@ -308,7 +318,7 @@ class SecurityPrivacySuite extends EventEmitter {
         this.paranoiaMode = true;
         this.paranoiaConfig = { encryption, tamperCheck, logLevel };
 
-        console.log('👁️ Paranoia Mode enabled - All operations will be monitored');
+        console.log('[MONITOR] Paranoia Mode enabled - All operations will be monitored');
         this.emit('paranoiaModeEnabled');
 
         // Hook into database operations
@@ -397,7 +407,7 @@ class SecurityPrivacySuite extends EventEmitter {
             await this.database.delete(oneTimeKey);
             this.oneTimeKeys.delete(oneTimeKey);
             
-            console.log(`🔒 One-time key '${key}' accessed and destroyed`);
+            console.log(`[SECURITY] One-time key '${key}' accessed and destroyed`);
             this.emit('oneTimeAccessed', { key });
             
             return data;
@@ -430,13 +440,13 @@ class SecurityPrivacySuite extends EventEmitter {
 
         // SAFETY CHECK: Warn about dangerous patterns
         if (pattern === '*' || pattern === '**' || pattern === '*.*') {
-            console.log('⚠️  WARNING: You are about to wipe ALL data!');
-            console.log('🛡️  Pattern:', pattern);
-            console.log('🔧 Wipe Level:', wipeLevel);
+            this.logger.warn('WARNING: You are about to wipe ALL data!');
+            this.logger.info('Pattern:', pattern);
+            this.logger.info('Wipe Level:', wipeLevel);
         }
 
-        console.log(`🧼 Wiping data matching pattern: ${pattern}`);
-        console.log(`🎯 Target database: ${this.database.config?.path || 'default'}`);
+        this.logger.info(`Wiping data matching pattern: ${pattern}`);
+        this.logger.info(`Target database: ${this.database.config?.path || 'default'}`);
         this.emit('wipeStarted', { pattern, wipeLevel });
 
         const collections = this.database.collections || new Map();
@@ -469,7 +479,7 @@ class SecurityPrivacySuite extends EventEmitter {
             }
         }
 
-        console.log(`✅ Wiped ${wipedCount} items matching pattern: ${pattern}`);
+        console.log(`[SUCCESS] Wiped ${wipedCount} items matching pattern: ${pattern}`);
         this.emit('wipeCompleted', { pattern, wipedCount });
         
         return wipedCount;
@@ -521,11 +531,11 @@ class SecurityPrivacySuite extends EventEmitter {
         
         if (hashedPassword === this.decoyConfig.password) {
             this.decoyConfig.authenticated = true;
-            console.log('✅ Decoy authentication successful - Real database access granted');
+            this.logger.success('Decoy authentication successful - Real database access granted');
             this.emit('decoyAuthenticated');
             return true;
         } else {
-            console.log('❌ Decoy authentication failed - Showing fake data');
+            this.logger.error('Decoy authentication failed - Showing fake data');
             this.emit('decoyAuthenticationFailed');
             return false;
         }
@@ -687,7 +697,7 @@ class SecurityPrivacySuite extends EventEmitter {
     disableParanoia() {
         this.paranoiaMode = false;
         this.paranoiaConfig = null;
-        console.log('👁️ Paranoia mode disabled');
+        console.log('[MONITOR] Paranoia mode disabled');
     }
 
     /**
@@ -752,10 +762,10 @@ class SecurityPrivacySuite extends EventEmitter {
             throw new Error('Emergency shutdown requires emergency code: { emergencyCode: "EMERGENCY_DESTROY_ALL_DATA" }');
         }
 
-        console.log('🚨 EMERGENCY SHUTDOWN INITIATED');
-        console.log('⚠️  THIS WILL DESTROY ALL DATA PERMANENTLY');
-        console.log(`🎯 Target: ${this.database.config?.path || 'default'}`);
-        console.log('⏰ Starting in 3 seconds... Press Ctrl+C to abort');
+        this.logger.error('EMERGENCY SHUTDOWN INITIATED');
+        this.logger.warn('THIS WILL DESTROY ALL DATA PERMANENTLY');
+        this.logger.info(`Target: ${this.database.config?.path || 'default'}`);
+        this.logger.warn('Starting in 3 seconds... Press Ctrl+C to abort');
         
         // Give user time to abort
         await new Promise(resolve => setTimeout(resolve, 3000));
