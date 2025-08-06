@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.2] - 2025-08-06
+### Removed - Dependency Optimization
+- **Benchmark Dependencies Cleanup**: Removed unnecessary dependencies from production package
+  - Removed `mongodb`: Only used for benchmark comparisons, not needed for core functionality
+  - Removed `ioredis` (Redis): Only used for performance testing against Redis
+  - Removed `better-sqlite3` (SQLite): Only used for benchmark testing against SQLite
+- **Production Package Optimization**: Reduced package size and installation time
+  - Kept essential dependencies: bcrypt, colors, cors, express, ws
+  - Cleaner dependency tree for production deployments
+  - Faster npm install times for end users
+  - Reduced security surface area by removing unused database drivers
+
 ## [1.5.1] - 2025-08-06
 ### Added - Modular Logger System
 - **Enterprise Text-Based Logging**: Professional logging system replacing emoji-based logs
